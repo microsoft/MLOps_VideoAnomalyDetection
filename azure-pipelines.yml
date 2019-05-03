@@ -25,7 +25,7 @@ steps:
     packageSpecs: 'python=3.6'
     updateConda: false
 - script: |
-    pip install --user azureml-sdk==1.0.21 azure-storage-blob
+    pip install --user azureml-sdk==1.0.33 azure-storage-blob
   displayName: 'Install prerequisites'
 
 - task: AzureCLI@1
