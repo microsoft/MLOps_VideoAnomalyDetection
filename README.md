@@ -1,4 +1,5 @@
 # Overview
+[![Build Status](https://dev.azure.com/aidemos/MLOps/_apis/build/status/Microsoft.MLOps_VideoAnomalyDetection?branchName=master)](https://dev.azure.com/aidemos/MLOps/_build/latest?definitionId=88?branchName=master)
 
 The automation of detecting anomalous events in videos is a challenging problem that currently attracts a lot of attention by researchers, but also has broad applications across industry verticals.  
 
