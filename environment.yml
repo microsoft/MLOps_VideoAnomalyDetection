@@ -20,7 +20,7 @@ dependencies:
     - bs4==0.0.1
     - sklearn
     - pandas==0.24.2
-    - azureml-sdk==1.0.21
+    - azureml-sdk==1.0.33
     - numpy==1.16.2
     - pylint # optional
     - pillow==6.0.0
