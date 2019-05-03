@@ -24,7 +24,7 @@ import json
 
 base_dir = '.'
 
-config_json = os.path.join(base_dir, '../config.json')
+config_json = os.path.join(base_dir, 'config.json')
 with open(config_json, 'r') as f:
     config = json.load(f)
 
