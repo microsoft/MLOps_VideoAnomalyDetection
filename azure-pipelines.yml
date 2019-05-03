@@ -1,0 +1,86 @@
+trigger:
+- video
+
+pool:
+  vmImage: 'Ubuntu 16.04'
+
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: 3.6
+    architecture: 'x64'
+
+- task: DownloadSecureFile@1
+  inputs:
+    name: configFile
+    secureFile: wopauli_config.json
+- script: echo "Printing the secure file path" 
+- script: cp $(Agent.TempDirectory)/wopauli_config.json $(Build.SourcesDirectory)/config.json
+
+- task: CondaEnvironment@1
+  displayName: 'Create Conda Environment '
+  inputs:
+    createCustomEnvironment: true
+    environmentName: prednet
+    packageSpecs: 'python=3.6'
+    updateConda: false
+    # createOptions: ''
+- script: |
+    pip install --user azureml-sdk==1.0.21 azure-storage-blob
+  displayName: 'Install prerequisites'
+
+# - task: AzureCLI@1
+#   displayName: 'Data Preparation'
+#   inputs:
+#     azureSubscription: 'serviceConnection'
+#     scriptLocation: inlineScript
+#     inlineScript: 'python video_anomaly/data_prep.py'
+
+- task: AzureCLI@1
+  displayName: 'Disable existing pipelines'
+  inputs:
+    azureSubscription: 'serviceConnection'
+    scriptLocation: inlineScript
+    inlineScript: 'python video_anomaly/utils.py --disable-pipelines'
+
+- task: AzureCLI@1
+  displayName: 'Build and Publish Pipelines'
+  inputs:
+    azureSubscription: 'serviceConnection'
+    scriptLocation: inlineScript
+    inlineScript: 'python video_anomaly/pipelines_master.py'
+
+# - task: AzureCLI@1
+#   displayName: 'Evaluate Model'
+#   inputs:
+#     azureSubscription: 'serviceConnection'
+#     scriptLocation: inlineScript
+#     inlineScript: 'python devops/code/evaluate_model.py'
+
+# - task: AzureCLI@1
+#   displayName: 'Register Model'
+#   inputs:
+#     azureSubscription: 'serviceConnection'
+#     scriptLocation: inlineScript
+#     inlineScript: 'python video_anomaly/register_model.py'
+
+# - task: AzureCLI@1
+#   displayName: 'Create Docker Image'
+#   inputs:
+#     azureSubscription: 'serviceConnection'
+#     scriptLocation: inlineScript
+#     inlineScript: 'python video_anomaly/create_docker_image.py'
+
+# - task: AzureCLI@1
+#   displayName: 'Deploy ACI'
+#   inputs:
+#     azureSubscription: 'serviceConnection'
+#     scriptLocation: inlineScript
+#     inlineScript: 'python video_anomaly/deploy_aci.py'
+
+# - task: AzureCLI@1
+#   displayName: 'ACI Service Test'
+#   inputs:
+#     azureSubscription: 'serviceConnection'
+#     scriptLocation: inlineScript
+#     inlineScript: 'python video_anomaly/test_aci.py'
