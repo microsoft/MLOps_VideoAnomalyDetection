@@ -55,9 +55,7 @@ experiments = {}
 runs = []
 for n, p in prednet_pipelines.items():
     print("submitting pipeline:", p.name)
-    runs.append(p.submit(ws, p.name))
+    _ = p.submit(ws, p.name)
 
-for run in runs:
-    run.wait_for_completion()
 
 print("done")
