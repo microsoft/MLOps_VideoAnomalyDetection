@@ -84,7 +84,8 @@ shutil.copy(os.path.join(base_dir, 'video_decoding.py'), script_folder)
 shutil.copy(os.path.join(base_dir, 'data_preparation.py'), script_folder)
 shutil.copy(os.path.join(base_dir, 'model_registration.py'), script_folder)
 shutil.copy(os.path.join(base_dir, 'config.json'), script_folder)
-
+shutil.copy(os.path.join(base_dir, '.azureml'), script_folder)
+    
 hash_paths = os.listdir(script_folder)
 
 build_pipelines = PythonScriptStep(
