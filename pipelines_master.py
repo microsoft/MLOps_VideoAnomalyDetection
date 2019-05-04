@@ -65,7 +65,7 @@ except ComputeTargetException:
 print(cpu_compute_target.get_status().serialize())
 
 # conda dependencies for compute targets
-cpu_cd = CondaDependencies.create(pip_packages=["azure-storage-blob", "hickle==3.4.3", "requests==2.21.0", "sklearn", "pandas==0.24.2", "azureml-sdk==1.0.23", "numpy==1.16.2"])
+cpu_cd = CondaDependencies.create(pip_indexurl='https://azuremlsdktestpypi.azureedge.net/sdk-release/Candidate/604C89A437BA41BD942B4F46D9A3591D', pip_packages=["azure-storage-blob", "hickle==3.4.3", "requests==2.21.0", "sklearn", "pandas==0.24.2", "azureml-sdk", "numpy==1.16.2"])
 
 # Runconfigs
 cpu_compute_run_config = RunConfiguration(conda_dependencies=cpu_cd)
