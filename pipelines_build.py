@@ -11,7 +11,7 @@ from azureml.core.compute import AmlCompute
 from azureml.core.compute import ComputeTarget
 from azureml.core.compute_target import ComputeTargetException
 from azureml.core.runconfig import CondaDependencies, RunConfiguration
-from azureml.train.hyperdrive import RandomParameterSampling, BanditPolicy, HyperDriveConfig, PrimaryMetricGoal
+from azureml.train.hyperdrive import RandomParameterSampling, BanditPolicy, HyperDriveRunConfig, PrimaryMetricGoal
 from azureml.pipeline.steps import HyperDriveStep
 from azureml.pipeline.core import PublishedPipeline
 from azureml.train.hyperdrive import choice, loguniform
@@ -81,8 +81,8 @@ def build_pipeline(dataset, ws, config):
     print(gpu_compute_target.get_status().serialize())
 
     # conda dependencies for compute targets
-    cpu_cd = CondaDependencies.create(conda_packages=["py-opencv=3.4.2"], pip_packages=["azure-storage-blob==1.5.0", "hickle==3.4.3", "requests==2.21.0", "sklearn", "pandas==0.24.2", "azureml-sdk==1.0.23", "numpy==1.16.2", "pillow==6.0.0"])
-    gpu_cd = CondaDependencies.create(pip_packages=["keras==2.0.8", "theano==1.0.4", "tensorflow==1.8.0", "tensorflow-gpu==1.8.0", "hickle==3.4.3", "matplotlib==3.0.3", "seaborn==0.9.0", "requests==2.21.0", "bs4==0.0.1", "imageio==2.5.0", "sklearn", "pandas==0.24.2", "azureml-sdk==1.0.23", "numpy==1.16.2"])
+    cpu_cd = CondaDependencies.create(conda_packages=["py-opencv=3.4.2"], pip_packages=["azure-storage-blob==1.5.0", "hickle==3.4.3", "requests==2.21.0", "sklearn", "pandas==0.24.2", "azureml-sdk==1.0.33", "numpy==1.16.2", "pillow==6.0.0"])
+    gpu_cd = CondaDependencies.create(pip_packages=["keras==2.0.8", "theano==1.0.4", "tensorflow==1.8.0", "tensorflow-gpu==1.8.0", "hickle==3.4.3", "matplotlib==3.0.3", "seaborn==0.9.0", "requests==2.21.0", "bs4==0.0.1", "imageio==2.5.0", "sklearn", "pandas==0.24.2", "azureml-sdk==1.0.33", "numpy==1.16.2"])
 
     # Runconfigs
     cpu_compute_run_config = RunConfiguration(conda_dependencies=cpu_cd)
@@ -168,24 +168,24 @@ def build_pipeline(dataset, ws, config):
 
     policy = BanditPolicy(evaluation_interval=2, slack_factor=0.1, delay_evaluation=20)
 
-    # hdc = HyperDriveRunConfig(estimator=est, 
-    #                         hyperparameter_sampling=ps, 
-    #                         policy=policy, 
-    #                         primary_metric_name='val_loss', 
-    #                         primary_metric_goal=PrimaryMetricGoal.MINIMIZE, 
-    #                         max_total_runs=100,
-    #                         max_concurrent_runs=5, 
-    #                         max_duration_minutes=60*6
-    #                         )
-
-    hdc = HyperDriveConfig(estimator=est, 
+    hdc = HyperDriveRunConfig(estimator=est, 
                             hyperparameter_sampling=ps, 
                             policy=policy, 
                             primary_metric_name='val_loss', 
                             primary_metric_goal=PrimaryMetricGoal.MINIMIZE, 
                             max_total_runs=100,
                             max_concurrent_runs=5, 
-                            max_duration_minutes=60*6)
+                            max_duration_minutes=60*6
+                            )
+
+    # hdc = HyperDriveConfig(estimator=est, 
+    #                         hyperparameter_sampling=ps, 
+    #                         policy=policy, 
+    #                         primary_metric_name='val_loss', 
+    #                         primary_metric_goal=PrimaryMetricGoal.MINIMIZE, 
+    #                         max_total_runs=100,
+    #                         max_concurrent_runs=5, 
+    #                         max_duration_minutes=60*6)
 
     hd_step = HyperDriveStep(
         name="train_w_hyperdrive",
