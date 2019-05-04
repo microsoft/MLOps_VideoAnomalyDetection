@@ -159,19 +159,14 @@ def build_pipeline(dataset, ws, config):
     print("data_prep created")
 
 
-        
+    # configure access to ACR for pulling our custom docker image
     acr = ContainerRegistry()
     acr.address = config['acr_address']
     acr.username = config['acr_username']
     acr.password = config['acr_password']
-    # {'address':config['acr_address'], 'username':config['acr_username'], 'password':config['acr_password']})
-    # acr = ContainerRegistry(address=config['acr_address'], username=config['acr_username'], password=config['acr_password'])
-    # acr = ContainerRegistry(config['acr_address'], config['acr_username'], config['acr_password'])
-
+    
     est = Estimator(source_directory=script_folder,
                     compute_target=gpu_compute_target,
-                    # pip_packages=["hickle==3.4.3"],#"horovod==0.13.5", 'keras==2.0.8', 'matplotlib', 'hickle'],
-                    # conda_packages=["tensorflow==1.8.0", "tensorflow-gpu==1.8.0",]
                     entry_script='train.py', 
                     use_gpu=True,
                     node_count=1,
@@ -179,17 +174,6 @@ def build_pipeline(dataset, ws, config):
                     image_registry_details=acr,
                     user_managed=True
                     )
-
-    # est = Estimator(source_directory=script_folder,
-    #                 compute_target=gpu_compute_target,
-    #                 # pip_packages=["horovod==0.13.5", 'keras==2.0.8', 'matplotlib', 'hickle'],
-    #                 # conda_packages=["tensorflow==1.8.0", "tensorflow-gpu==1.8.0",]
-    #                 entry_script='train.py', 
-    #                 use_gpu=True,
-    #                 node_count=1,
-    #                 custom_docker_image = "prednetws0551092507.azurecr.io/wopauli_1.8-gpu:2",
-    #                 user_managed=True
-    #                 )
 
     ps = RandomParameterSampling(
         {
@@ -205,7 +189,7 @@ def build_pipeline(dataset, ws, config):
 
     policy = BanditPolicy(evaluation_interval=2, slack_factor=0.1, delay_evaluation=20)
 
-    hdc = HyperDriveConfig(estimator=est, # run_config=script_run_config, 
+    hdc = HyperDriveConfig(estimator=est, 
                             hyperparameter_sampling=ps, 
                             policy=policy, 
                             primary_metric_name='val_loss', 
@@ -214,15 +198,6 @@ def build_pipeline(dataset, ws, config):
                             max_concurrent_runs=5, 
                             max_duration_minutes=60*6
                             )
-
-    # hdc = HyperDriveConfig(estimator=est, 
-    #                         hyperparameter_sampling=ps, 
-    #                         policy=policy, 
-    #                         primary_metric_name='val_loss', 
-    #                         primary_metric_goal=PrimaryMetricGoal.MINIMIZE, 
-    #                         max_total_runs=100,
-    #                         max_concurrent_runs=5, 
-    #                         max_duration_minutes=60*6)
 
     hd_step = HyperDriveStep(
         name="train_w_hyperdrive",
