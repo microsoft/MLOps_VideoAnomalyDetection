@@ -156,7 +156,7 @@ def build_pipeline(dataset, ws, config):
 
     ps = RandomParameterSampling(
         {
-            '--batch_size': choice(2, 4, 8, 16),
+            '--batch_size': choice(1, 2, 4, 8),
             '--filter_sizes': choice("3, 3, 3", "4, 4, 4", "5, 5, 5"),
             '--stack_sizes': choice("48, 96, 192", "36, 72, 144", "12, 24, 48"), #, "48, 96"),
             '--learning_rate': loguniform(-6, -1),
