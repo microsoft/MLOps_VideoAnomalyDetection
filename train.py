@@ -5,6 +5,7 @@ This script can be run in isolation, but is really meant to be part of an aml pi
 
 '''
 
+
 print("loading standard modules")
 import os
 import numpy as np
@@ -92,6 +93,8 @@ os.makedirs(output_dir, exist_ok=True)
 # initiate logging if we are running remotely
 if remote_execution:
     print("Running on remote compute target:", remote_execution)
+    from azureml.core import VERSION
+    print("azureml.core.VERSION", VERSION)
     from azureml.core import Run
 
     # start an Azure ML run

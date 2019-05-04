@@ -11,7 +11,7 @@ from azureml.pipeline.steps import PythonScriptStep
 from azureml.core.compute import AmlCompute
 from azureml.core.runconfig import DEFAULT_GPU_IMAGE, DEFAULT_CPU_IMAGE
 from azureml.core.compute import ComputeTarget
-from azureml.core.compute_target import ComputeTargetException
+# from azureml.core.compute_target import ComputeTargetException
 from azureml.core.runconfig import CondaDependencies, RunConfiguration
 from azureml.train.hyperdrive import RandomParameterSampling, BanditPolicy, HyperDriveRunConfig, PrimaryMetricGoal
 from azureml.pipeline.steps import HyperDriveStep
@@ -21,6 +21,9 @@ from azureml.core.authentication import ServicePrincipalAuthentication
 from utils import *
 import json
 
+
+from azureml.core import VERSION
+print("azureml.core.VERSION", VERSION)
 
 base_dir = '.'
 
@@ -52,7 +55,7 @@ cpu_compute_name = config['cpu_compute']
 try:
         cpu_compute_target = AmlCompute(ws, cpu_compute_name)
         print("found existing compute target: %s" % cpu_compute_name)
-except ComputeTargetException:
+except: # ComputeTargetException:
     print("creating new compute target")
     
     provisioning_config = AmlCompute.provisioning_configuration(vm_size='STANDARD_D2_V2', 
@@ -84,7 +87,7 @@ shutil.copy(os.path.join(base_dir, 'video_decoding.py'), script_folder)
 shutil.copy(os.path.join(base_dir, 'data_preparation.py'), script_folder)
 shutil.copy(os.path.join(base_dir, 'model_registration.py'), script_folder)
 shutil.copy(os.path.join(base_dir, 'config.json'), script_folder)
-shutil.copytree(os.path.join(base_dir, '.azureml'), os.path.join(script_folder, '.azureml'))
+# shutil.copytree(os.path.join(base_dir, '.azureml'), os.path.join(script_folder, '.azureml'))
     
 hash_paths = os.listdir(script_folder)
 
