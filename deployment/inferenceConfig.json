@@ -1,0 +1,11 @@
+{
+   "entryScript": "score.py",
+   "runtime": "python",
+   "condaFile": "prednet_env.yml",
+   "extraDockerfileSteps": null,
+   "schemaFile": null,
+   "sourceDirectory": "./inference-scripts",
+   "enableGpu": false,
+   "baseImage": null,
+   "baseImageRegistry": null
+}
