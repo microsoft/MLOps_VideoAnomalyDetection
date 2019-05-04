@@ -82,7 +82,7 @@ def build_pipeline(dataset, ws, config):
 
     # conda dependencies for compute targets
     cpu_cd = CondaDependencies.create(conda_packages=["py-opencv=3.4.2"], pip_indexurl='https://azuremlsdktestpypi.azureedge.net/sdk-release/Candidate/604C89A437BA41BD942B4F46D9A3591D', pip_packages=["azure-storage-blob==1.5.0", "hickle==3.4.3", "requests==2.21.0", "sklearn", "pandas==0.24.2", "azureml-sdk", "numpy==1.16.2", "pillow==6.0.0"])
-    gpu_cd = CondaDependencies.create(pip_indexurl='https://azuremlsdktestpypi.azureedge.net/sdk-release/Candidate/604C89A437BA41BD942B4F46D9A3591D', pip_packages=["horovod", "keras==2.0.8", "theano==1.0.4", "tensorflow==1.8.0", "tensorflow-gpu==1.8.0", "hickle==3.4.3", "matplotlib==3.0.3", "seaborn==0.9.0", "requests==2.21.0", "bs4==0.0.1", "imageio==2.5.0", "sklearn", "pandas==0.24.2", "azureml-sdk", "numpy==1.16.2"])
+    gpu_cd = CondaDependencies.create(pip_indexurl='https://azuremlsdktestpypi.azureedge.net/sdk-release/Candidate/604C89A437BA41BD942B4F46D9A3591D', pip_packages=["azureml-sdk"]) #horovod==0.13.5", "keras==2.0.8", "theano==1.0.4", "tensorflow==1.8.0", "tensorflow-gpu==1.8.0", "hickle==3.4.3", "matplotlib==3.0.3", "seaborn==0.9.0", "requests==2.21.0", "bs4==0.0.1", "imageio==2.5.0", "sklearn", "pandas==0.24.2", "azureml-sdk", "numpy==1.16.2"])
 
     # Runconfigs
     cpu_compute_run_config = RunConfiguration(conda_dependencies=cpu_cd)
@@ -205,7 +205,7 @@ def build_pipeline(dataset, ws, config):
         name='register_model',
         script_name='model_registration.py',
         arguments=['--input_dir', data_metrics, '--output_dir', data_output],
-        compute_target=gpu_compute_target,
+        compute_target=cpu_compute_target,
         inputs=[data_metrics],
         outputs=[data_output],
         source_directory=script_folder,
