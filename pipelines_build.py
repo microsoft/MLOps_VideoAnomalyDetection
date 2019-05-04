@@ -148,7 +148,7 @@ def build_pipeline(dataset, ws, config):
 
     est = TensorFlow(source_directory=script_folder,
                     compute_target=gpu_compute_target,
-                    pip_packages=['keras==2.0.8', 'theano', 'tensorflow==1.8.0', 'tensorflow-gpu==1.8.0', 'matplotlib', 'horovod', 'hickle'],
+                    pip_packages=['keras==2.0.8', 'theano', 'tensorflow==1.8.0', 'tensorflow-gpu==1.8.0', 'matplotlib', 'horovod==0.13.5', 'hickle'],
                     entry_script='train.py', 
                     use_gpu=True,
                     node_count=1)
