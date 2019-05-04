@@ -19,6 +19,7 @@ from azureml.train.dnn import TensorFlow
 from azure.storage.blob import BlockBlobService
 from azureml.core.runconfig import DEFAULT_GPU_IMAGE, DEFAULT_CPU_IMAGE
 from azureml.core.authentication import ServicePrincipalAuthentication
+from azureml.core import ScriptRunConfig
 
 def build_pipeline(dataset, ws, config):
     print("building pipeline for dataset %s in workspace %s" % (dataset, ws.name))
@@ -41,6 +42,7 @@ def build_pipeline(dataset, ws, config):
     shutil.copy(os.path.join(base_dir, 'data_preparation.py'), script_folder)
     shutil.copy(os.path.join(base_dir, 'model_registration.py'), script_folder)
     shutil.copy(os.path.join(base_dir, 'config.json'), script_folder)
+    shutil.copy(os.path.join(base_dir, '.azureml'), script_folder)
 
     cpu_compute_name = config['cpu_compute']
     try:
@@ -146,13 +148,17 @@ def build_pipeline(dataset, ws, config):
 
     print("data_prep created")
 
-    est = TensorFlow(source_directory=script_folder,
-                    compute_target=gpu_compute_target,
-                    pip_packages=['keras==2.0.8', 'theano', 'tensorflow==1.8.0', 'tensorflow-gpu==1.8.0', 'matplotlib', 'horovod==0.13.5', 'hickle'],
-                    entry_script='train.py', 
-                    use_gpu=True,
-                    node_count=1)
 
+    # est = TensorFlow(source_directory=script_folder,
+    #                 compute_target=gpu_compute_target,
+    #                 pip_packages=['keras==2.0.8', 'theano', 'tensorflow==1.8.0', 'tensorflow-gpu==1.8.0', 'matplotlib', 'horovod==0.13.5', 'hickle'],
+    #                 entry_script='train.py', 
+    #                 use_gpu=True,
+    #                 node_count=1)
+
+    run_config = RunConfiguration.load('.','gpu')
+
+    script_run_config = ScriptRunConfig(run_config = run_config, arguments = script_params, source_directory='.')
 
     ps = RandomParameterSampling(
         {
@@ -168,7 +174,7 @@ def build_pipeline(dataset, ws, config):
 
     policy = BanditPolicy(evaluation_interval=2, slack_factor=0.1, delay_evaluation=20)
 
-    hdc = HyperDriveRunConfig(estimator=est, 
+    hdc = HyperDriveConfig(run_config=script_run_config, 
                             hyperparameter_sampling=ps, 
                             policy=policy, 
                             primary_metric_name='val_loss', 

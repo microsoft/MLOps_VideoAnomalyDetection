@@ -1,0 +1,24 @@
+name: project_environment
+dependencies:
+  # The python interpreter version.
+  # Currently Azure ML only supports 3.5.2 and later.
+- python=3.6.2
+
+- pip:
+  - --index-url https://azuremlsdktestpypi.azureedge.net/sdk-release/Candidate/604C89A437BA41BD942B4F46D9A3591D
+  - --extra-index-url https://pypi.python.org/simple
+  - horovod==0.13.5
+  - keras==2.0.8
+  - theano==1.0.4
+  - tensorflow==1.8.0
+  - tensorflow-gpu==1.8.0
+  - hickle==3.4.3
+  - matplotlib==3.0.3
+  - seaborn==0.9.0
+  - requests==2.21.0
+  - bs4==0.0.1
+  - imageio==2.5.0
+  - sklearn
+  - pandas==0.24.2
+  - azureml-sdk==1.0.33.*
+  - numpy==1.16.2
