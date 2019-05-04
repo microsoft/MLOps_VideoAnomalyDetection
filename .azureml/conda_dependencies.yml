@@ -9,16 +9,16 @@ dependencies:
   - --extra-index-url https://pypi.python.org/simple
   - horovod==0.13.5
   - keras==2.0.8
-  - theano==1.0.4
+  # - theano==1.0.4
   - tensorflow==1.8.0
   - tensorflow-gpu==1.8.0
   - hickle==3.4.3
   - matplotlib==3.0.3
   - seaborn==0.9.0
-  - requests==2.21.0
-  - bs4==0.0.1
+  # - requests==2.21.0
+  # - bs4==0.0.1
   - imageio==2.5.0
   - sklearn
-  - pandas==0.24.2
+  # - pandas==0.24.2
   - azureml-sdk==1.0.33.*
   - numpy==1.16.2
