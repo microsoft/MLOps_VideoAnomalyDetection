@@ -130,6 +130,11 @@ print("pipeline id: ", published_pipeline.id)
 
 datastore = ws.get_default_datastore()
 
+with open('placeholder.txt', 'w') as f:
+    f.write('This is just a placeholder to ensure that this path exists in the blobstore.\n')
+
+datastore.upload_files([os.path.join(os.getcwd(), 'filestamp.txt')], target_path='prednet/data/video/')
+
 schedule = Schedule.create(workspace=ws, name=pipeline_name + "_sch",
                            pipeline_id=published_pipeline.id, 
                            experiment_name='prednet_master',
