@@ -1,0 +1,35 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'Ubuntu-16.04'
+
+steps:
+
+- task: DownloadSecureFile@1
+  inputs:
+    name: configFile
+    secureFile: config.json
+- script: echo "Printing the secure file path. You can generate the required config file by running az ml folder attach at the root of your git repository." 
+- script: cp $(Agent.TempDirectory)/config.json $(Build.SourcesDirectory)/config.json
+
+- task: AzureCLI@1
+  displayName: 'Install the CLI'
+  inputs:
+    azureSubscription: 'serviceConnection'
+    scriptLocation: inlineScript
+    inlineScript: 'az extension add -n azure-cli-ml'
+
+- task: AzureCLI@1
+  displayName: 'Deploy model'
+  inputs:
+    azureSubscription: 'serviceConnection'
+    scriptLocation: inlineScript
+    inlineScript: 'az ml model deploy -n prednettest -m prednet_UCSDped1:1 --ic inferenceConfig.json --dc deploymentConfig.json'
+
+- task: AzureCLI@1
+  displayName: 'get service log'
+  inputs:
+    azureSubscription: 'serviceConnection'
+    scriptLocation: inlineScript
+    inlineScript: 'az ml service get-logs -n prednettest'
