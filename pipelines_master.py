@@ -136,7 +136,8 @@ schedule = Schedule.create(workspace=ws, name=pipeline_name + "_sch",
                            datastore=datastore,
                            wait_for_provisioning=True,
                            description="Datastore scheduler for Pipeline" + pipeline_name,
-                           path_on_datastore='prednet/data/video'
+                           path_on_datastore='prednet/data/video',
+                           polling_interval=1
                            )
 
 print("Created schedule with id: {}".format(schedule.id))
