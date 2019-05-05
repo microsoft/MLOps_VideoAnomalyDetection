@@ -176,14 +176,14 @@ def build_pipeline(dataset, ws, config):
         }
     )
 
-    policy = BanditPolicy(evaluation_interval=2, slack_factor=0.1, delay_evaluation=20)
+    policy = BanditPolicy(evaluation_interval=2, slack_factor=0.1, delay_evaluation=10)
 
     hdc = HyperDriveConfig(estimator=est, 
                             hyperparameter_sampling=ps, 
                             policy=policy, 
                             primary_metric_name='val_loss', 
                             primary_metric_goal=PrimaryMetricGoal.MINIMIZE, 
-                            max_total_runs=100,
+                            max_total_runs=10,
                             max_concurrent_runs=5, 
                             max_duration_minutes=60*6
                             )
@@ -259,7 +259,7 @@ generator = blob_service.list_blobs(def_blob_store.container_name, prefix="predn
 datasets = []
 for blob in generator:
     dataset = blob.name.split('/')[3]
-    if dataset not in datasets and dataset.startswith("UCSD"):
+    if dataset not in datasets and dataset.startswith("UCSD") and not dataset.endswith("txt"):
         datasets.append(dataset)
         print("Found dataset:", dataset)
 
@@ -277,4 +277,5 @@ for dataset in datasets:
         new_datasets.append(dataset)
 
 for dataset in new_datasets:
+    print("Creating pipeline for dataset", dataset)
     build_pipeline(dataset, ws, config)

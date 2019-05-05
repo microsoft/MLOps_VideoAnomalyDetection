@@ -47,9 +47,10 @@ ws = Workspace.from_config(path=config_json, auth=svc_pr)
 script_folder = './scripts/'
 try:
     os.makedirs(script_folder)
-except OSError as e:
-    for f in os.listdir(script_folder):
-        os.unlink(os.path.join(script_folder, f))
+except BaseException as e:
+    print("Deleting:", script_folder)
+    shutil.rmtree(script_folder)
+    os.makedirs(script_folder)
 
 cpu_compute_name = config['cpu_compute']
 try:
@@ -134,7 +135,8 @@ schedule = Schedule.create(workspace=ws, name=pipeline_name + "_sch",
                            experiment_name='Schedule_Run',
                            datastore=datastore,
                            wait_for_provisioning=True,
-                           description="Datastore scheduler for Pipeline" + pipeline_name
+                           description="Datastore scheduler for Pipeline" + pipeline_name,
+                           path_on_datastore='prednet/data/video'
                            )
 
 print("Created schedule with id: {}".format(schedule.id))

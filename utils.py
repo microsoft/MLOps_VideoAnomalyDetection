@@ -79,12 +79,13 @@ def upload_data(folder):
 
     ds = ws.get_default_datastore()
 
-    ds.upload(src_dir=os.path.join('./data/video', folder), target_path=os.path.join('prednet/data/video', folder))
+    ds.upload(src_dir=os.path.join('./data/video', folder), target_path=os.path.join('prednet/data/video'))
+    # ds.upload_files(os.path.join(os.getcwd(), 'data/video', folder + '.txt'), target_path=os.path.join('prednet/data/video'))
 
-    with open('filestamp.txt', 'w') as f:
-        f.write(folder + '\n')
+    # with open('filestamp.txt', 'w') as f:
+    #     f.write(folder + '\n')
 
-    ds.upload_files([os.path.join(os.getcwd(), 'filestamp.txt')], overwrite=True)
+    # ds.upload_files([os.path.join(os.getcwd(), 'filestamp.txt')], overwrite=True)
 
 
 def delete_data_from_blob(prefix):
