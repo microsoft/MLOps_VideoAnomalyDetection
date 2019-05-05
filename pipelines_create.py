@@ -22,6 +22,7 @@ from azureml.core.runconfig import DEFAULT_GPU_IMAGE, DEFAULT_CPU_IMAGE
 from azureml.core.authentication import ServicePrincipalAuthentication
 from azureml.core import ScriptRunConfig
 from azureml.core.container_registry import ContainerRegistry
+from azureml.pipeline.core.schedule import ScheduleRecurrence, Schedule
 
 from azureml.core import VERSION
 print("azureml.core.VERSION", VERSION)
@@ -222,8 +223,19 @@ def build_pipeline(dataset, ws, config):
     print("Simple validation complete") 
 
     pipeline_name = 'prednet_' + dataset
-    pipeline.publish(name=pipeline_name)
+    published_pipeline = pipeline.publish(name=pipeline_name)
     
+
+    schedule = Schedule.create(workspace=ws, name=pipeline_name + "_sch",
+                            pipeline_id=published_pipeline.id, 
+                            experiment_name=pipeline_name,
+                            datastore=def_blob_store,
+                            wait_for_provisioning=True,
+                            description="Datastore scheduler for Pipeline" + pipeline_name,
+                            path_on_datastore=os.path.join('prednet/data/video', dataset, 'Train'),
+                            polling_interval=1
+                            )
+
     return pipeline_name
 
 
