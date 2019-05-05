@@ -132,7 +132,7 @@ datastore = ws.get_default_datastore()
 
 schedule = Schedule.create(workspace=ws, name=pipeline_name + "_sch",
                            pipeline_id=published_pipeline.id, 
-                           experiment_name='Schedule_Run',
+                           experiment_name='prednet_master',
                            datastore=datastore,
                            wait_for_provisioning=True,
                            description="Datastore scheduler for Pipeline" + pipeline_name,
