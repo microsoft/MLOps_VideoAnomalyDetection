@@ -60,8 +60,9 @@ A computer with a GPU, Standard NC6 sufficient, faster learning with NC6_v2/3 or
 
 ### Advanced Topics
 
-1. Transfer learning - (How to quickly train the model on different source of video)
-1. MLOps - See this [blog post](https://azure.microsoft.com/en-us/blog/breaking-the-wall-between-data-scientists-and-app-developers-with-azure-devops/)
+1. [Transfer learning](./docs/transfer_learning.md) - How to quickly retrain the model on new data.
+2. [AML Pipelines](./docs/aml_pipelines.md) - Use AML pipelines to scale your solution.
+3. [MLOps](./docs/mlops.md) - How to quickly scale your solution with the MLOps extension for DevOps.
 
 ## References / Resources
 

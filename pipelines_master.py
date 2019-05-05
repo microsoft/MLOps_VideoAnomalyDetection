@@ -78,7 +78,7 @@ cpu_compute_run_config.environment.docker.base_image = DEFAULT_CPU_IMAGE
 cpu_compute_run_config.environment.spark.precache_packages = False
 
 shutil.copy(os.path.join(base_dir, 'pipelines_submit.py'), script_folder)
-shutil.copy(os.path.join(base_dir, 'pipelines_build.py'), script_folder)
+shutil.copy(os.path.join(base_dir, 'pipelines_create.py'), script_folder)
 shutil.copy(os.path.join(base_dir, 'train.py'), script_folder)
 shutil.copy(os.path.join(base_dir, 'data_utils.py'), script_folder)
 shutil.copy(os.path.join(base_dir, 'prednet.py'), script_folder)
@@ -87,13 +87,12 @@ shutil.copy(os.path.join(base_dir, 'video_decoding.py'), script_folder)
 shutil.copy(os.path.join(base_dir, 'data_preparation.py'), script_folder)
 shutil.copy(os.path.join(base_dir, 'model_registration.py'), script_folder)
 shutil.copy(os.path.join(base_dir, 'config.json'), script_folder)
-# shutil.copytree(os.path.join(base_dir, '.azureml'), os.path.join(script_folder, '.azureml'))
     
 hash_paths = os.listdir(script_folder)
 
-build_pipelines = PythonScriptStep(
-    name='build pipelines',
-    script_name="pipelines_build.py", 
+create_pipelines = PythonScriptStep(
+    name='create pipelines',
+    script_name="pipelines_create.py", 
     compute_target=cpu_compute_target, 
     source_directory=script_folder,
     runconfig=cpu_compute_run_config,
@@ -116,9 +115,9 @@ submit_pipelines = PythonScriptStep(
 )
 print("pipeline submit step created")
 
-submit_pipelines.run_after(build_pipelines)
+submit_pipelines.run_after(create_pipelines)
 
-pipeline = Pipeline(workspace=ws, steps=[build_pipelines, submit_pipelines])
+pipeline = Pipeline(workspace=ws, steps=[create_pipelines, submit_pipelines])
 print ("Pipeline created")
 
 pipeline.validate()

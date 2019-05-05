@@ -39,7 +39,7 @@ def build_pipeline(dataset, ws, config):
     
     shutil.copy(os.path.join(base_dir, 'video_decoding.py'), script_folder)
     shutil.copy(os.path.join(base_dir, 'pipelines_submit.py'), script_folder)
-    shutil.copy(os.path.join(base_dir, 'pipelines_build.py'), script_folder)
+    shutil.copy(os.path.join(base_dir, 'pipelines_create.py'), script_folder)
     shutil.copy(os.path.join(base_dir, 'train.py'), script_folder)
     shutil.copy(os.path.join(base_dir, 'data_utils.py'), script_folder)
     shutil.copy(os.path.join(base_dir, 'prednet.py'), script_folder)
@@ -47,8 +47,7 @@ def build_pipeline(dataset, ws, config):
     shutil.copy(os.path.join(base_dir, 'data_preparation.py'), script_folder)
     shutil.copy(os.path.join(base_dir, 'model_registration.py'), script_folder)
     shutil.copy(os.path.join(base_dir, 'config.json'), script_folder)
-    # shutil.copy(os.path.join(base_dir, '.azureml'), script_folder)
-
+    
     cpu_compute_name = config['cpu_compute']
     try:
         cpu_compute_target = AmlCompute(ws, cpu_compute_name)
@@ -71,7 +70,7 @@ def build_pipeline(dataset, ws, config):
     try:
         gpu_compute_target = AmlCompute(workspace=ws, name=gpu_compute_name)
         print("found existing compute target: %s" % gpu_compute_name)
-    except: # ComputeTargetException:
+    except: 
         print('Creating a new compute target...')
         provisioning_config = AmlCompute.provisioning_configuration(vm_size='STANDARD_NC6', 
                                                                     max_nodes=10,
@@ -85,12 +84,15 @@ def build_pipeline(dataset, ws, config):
         gpu_compute_target.wait_for_completion(show_output=True, min_node_count=None, timeout_in_minutes=20)
 
     # use get_status() to get a detailed status for the current cluster. 
-    print(gpu_compute_target.get_status().serialize())
+    try:
+        print(gpu_compute_target.get_status().serialize())
+    except BaseException as e:
+        print("Could not get status of compute target.")
+        print(e)
 
     # conda dependencies for compute targets
     cpu_cd = CondaDependencies.create(conda_packages=["py-opencv=3.4.2"], pip_indexurl='https://azuremlsdktestpypi.azureedge.net/sdk-release/Candidate/604C89A437BA41BD942B4F46D9A3591D', pip_packages=["azure-storage-blob==1.5.0", "hickle==3.4.3", "requests==2.21.0", "sklearn", "pandas==0.24.2", "azureml-sdk", "numpy==1.16.2", "pillow==6.0.0"])
-    # gpu_cd = CondaDependencies(".", "conda_dependencies.yml")# .create(pip_indexurl='https://azuremlsdktestpypi.azureedge.net/sdk-release/Candidate/604C89A437BA41BD942B4F46D9A3591D', pip_packages=["azureml-sdk", "horovod==0.13.5", "keras==2.0.8", "theano==1.0.4", "tensorflow==1.8.0", "tensorflow-gpu==1.8.0", "hickle==3.4.3", "matplotlib==3.0.3", "seaborn==0.9.0", "requests==2.21.0", "bs4==0.0.1", "imageio==2.5.0", "sklearn", "pandas==0.24.2", "azureml-sdk", "numpy==1.16.2"])
-
+    
     # Runconfigs
     cpu_compute_run_config = RunConfiguration(conda_dependencies=cpu_cd)
     cpu_compute_run_config.environment.docker.enabled = True
@@ -98,33 +100,20 @@ def build_pipeline(dataset, ws, config):
     cpu_compute_run_config.environment.docker.base_image = DEFAULT_CPU_IMAGE
     cpu_compute_run_config.environment.spark.precache_packages = False
 
-
-    # run_config = RunConfiguration.load('.','gpu')
-
-    # script_run_config = ScriptRunConfig(run_config = run_config, source_directory='./scripts')
-
-    # gpu_compute_run_config = RunConfiguration(conda_dependencies=gpu_cd)
-    # gpu_compute_run_config.environment.docker.enabled = True
-    # gpu_compute_run_config.environment.docker.gpu_support = True
-    # gpu_compute_run_config.environment.docker.base_image = DEFAULT_GPU_IMAGE
-    # gpu_compute_run_config.environment.spark.precache_packages = False
-
-
     print("PipelineData object created")
 
+    # DataReference to where video data is stored.
     video_data = DataReference(
         datastore=def_blob_store,
         data_reference_name="video_data",
         path_on_datastore=os.path.join("prednet", "data", "video", dataset))
+    print("DataReference object created")
         
     # Naming the intermediate data as processed_data1 and assigning it to the variable processed_data1.
     raw_data = PipelineData("raw_video_fames", datastore=def_blob_store)
     preprocessed_data = PipelineData("preprocessed_video_frames", datastore=def_blob_store)
     data_metrics = PipelineData("data_metrics", datastore=def_blob_store)
     data_output = PipelineData("output_data", datastore=def_blob_store)
-
-
-    print("DataReference object created")
 
     # prepare dataset for training/testing prednet
     video_decoding = PythonScriptStep(
@@ -139,7 +128,7 @@ def build_pipeline(dataset, ws, config):
         allow_reuse=True,
         hash_paths=['.']
     )
-    print("video_decode created")
+    print("video_decode step created")
 
     # prepare dataset for training/testing recurrent neural network
     data_prep = PythonScriptStep(
@@ -156,7 +145,7 @@ def build_pipeline(dataset, ws, config):
     )
     data_prep.run_after(video_decoding)
 
-    print("data_prep created")
+    print("data_prep step created")
 
 
     # configure access to ACR for pulling our custom docker image
@@ -170,7 +159,7 @@ def build_pipeline(dataset, ws, config):
                     entry_script='train.py', 
                     use_gpu=True,
                     node_count=1,
-                    custom_docker_image = "wopauli_1.8-gpu:4",
+                    custom_docker_image = "wopauli_1.8-gpu:1",
                     image_registry_details=acr,
                     user_managed=True
                     )

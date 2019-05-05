@@ -1,0 +1,15 @@
+{
+    "subscription_id": "",
+    "resource_group": "",
+    "workspace_name": "",
+    "workspace_region": "",
+    "service_principal_id": "",
+    "service_principal_password": "",
+    "tenant_id": "",
+    "cpu_compute": "",
+    "gpu_compute": "",
+    "data_folder": "",
+    "acr_address": "",
+    "acr_username": "",
+    "acr_password": ""
+}
