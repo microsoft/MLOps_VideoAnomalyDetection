@@ -49,7 +49,7 @@ def disable_pipeline(pipeline_name="", dry_run=True):
     # use the last ID in the list for Schedule operations: 
     print("Published pipelines found in the workspace:")
     for pub_pipeline in all_pub_pipelines:
-        if pub_pipeline.name == pipeline_name or pipeline_name == "":
+        if pub_pipeline.name.startswith('prednet') and pub_pipeline.name == pipeline_name or pipeline_name == "":
             print("Found pipeline:", pub_pipeline.name, pub_pipeline.id)
             pub_pipeline_id = pub_pipeline.id
             schedules = Schedule.get_all(ws, pipeline_id=pub_pipeline_id)
