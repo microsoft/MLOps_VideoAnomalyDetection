@@ -48,6 +48,8 @@ A computer with a GPU, Standard NC6 sufficient, faster learning with NC6_v2/3 or
 
 [UCSD Anomaly Detection Dataset](http://www.svcl.ucsd.edu/projects/anomaly/dataset.htm)
 
+The dataset consists of individual files for video frames. Please use this [script](./tools/create_videos.sh) to create video files.
+
 ## Agenda
 
 ### Getting Started

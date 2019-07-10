@@ -24,4 +24,4 @@ dependencies:
     - numpy==1.16.2
     - pylint # optional
     - pillow==6.0.0
-    
+    - azure-storage-blob

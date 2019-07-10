@@ -190,8 +190,8 @@ def build_pipeline(dataset, ws, config):
                             )
 
     hd_step = HyperDriveStep(
-        name="train_w_hyperdrive",
-        hyperdrive_run_config=hdc,
+        "train_w_hyperdrive",
+        hdc,
         estimator_entry_script_arguments=[
             '--data-folder', preprocessed_data, 
             '--remote_execution',
