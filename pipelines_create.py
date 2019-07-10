@@ -9,13 +9,11 @@ from azureml.pipeline.core import Pipeline, PipelineData
 from azureml.pipeline.steps import PythonScriptStep
 from azureml.core.compute import AmlCompute
 from azureml.core.compute import ComputeTarget
-# from azureml.core.compute_target import ComputeTargetException
 from azureml.core.runconfig import CondaDependencies, RunConfiguration
 from azureml.train.hyperdrive import RandomParameterSampling, BanditPolicy, HyperDriveConfig, PrimaryMetricGoal
 from azureml.pipeline.steps import HyperDriveStep
 from azureml.pipeline.core import PublishedPipeline
 from azureml.train.hyperdrive import choice, loguniform
-# from azureml.train.dnn import TensorFlow
 from azureml.train.estimator import Estimator
 from azure.storage.blob import BlockBlobService
 from azureml.core.runconfig import DEFAULT_GPU_IMAGE, DEFAULT_CPU_IMAGE
@@ -159,10 +157,7 @@ def build_pipeline(dataset, ws, config):
                     compute_target=gpu_compute_target,
                     entry_script='train.py', 
                     use_gpu=True,
-                    node_count=1,
-                    custom_docker_image = "wopauli_1.8-gpu:1",
-                    image_registry_details=acr,
-                    user_managed=True
+                    node_count=1
                     )
 
     ps = RandomParameterSampling(
@@ -189,9 +184,8 @@ def build_pipeline(dataset, ws, config):
                             max_duration_minutes=60*6
                             )
 
-    hd_step = HyperDriveStep(
-        name="train_w_hyperdrive",
-        hyperdrive_run_config=hdc,
+    hd_step = HyperDriveStep("train_w_hyperdrive",
+        hdc,
         estimator_entry_script_arguments=[
             '--data-folder', preprocessed_data, 
             '--remote_execution',
@@ -233,7 +227,7 @@ def build_pipeline(dataset, ws, config):
                             wait_for_provisioning=True,
                             description="Datastore scheduler for Pipeline" + pipeline_name,
                             path_on_datastore=os.path.join('prednet/data/video', dataset, 'Train'),
-                            polling_interval=1
+                            polling_interval=60
                             )
 
     return pipeline_name
@@ -276,7 +270,7 @@ for blob in generator:
         print("Found dataset:", dataset)
 
 # Get all published pipeline objects in the workspace
-all_pub_pipelines = PublishedPipeline.get_all(ws)
+all_pub_pipelines = PublishedPipeline.list(ws)
 
 # Create a list of datasets for which we have (old) and don't have (new) a published pipeline
 old_datasets = []

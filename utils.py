@@ -24,8 +24,8 @@ def get_workspace():
             tenant_id=config['tenant_id'],
             service_principal_id=config['service_principal_id'],
             service_principal_password=config['service_principal_password'])
-    except KeyError as e:
-        print("Getting Service Principal Authentication from Azure Devops")
+    except KeyError:
+        print("Getting Service Principal Authentication from Azure Devops.")
         svc_pr = None
         pass
 
@@ -43,7 +43,7 @@ def disable_pipeline(pipeline_name="", dry_run=True):
     ws = get_workspace()
 
     # Get all published pipeline objects in the workspace
-    all_pub_pipelines = PublishedPipeline.get_all(ws)
+    all_pub_pipelines = PublishedPipeline.list(ws)
 
     # We will iterate through the list of published pipelines and 
     # use the last ID in the list for Schedule operations: 
@@ -80,12 +80,6 @@ def upload_data(folder):
     ds = ws.get_default_datastore()
 
     ds.upload(src_dir=os.path.join('./data/video', folder), target_path=os.path.join('prednet/data/video'))
-    # ds.upload_files(os.path.join(os.getcwd(), 'data/video', folder + '.txt'), target_path=os.path.join('prednet/data/video'))
-
-    # with open('filestamp.txt', 'w') as f:
-    #     f.write(folder + '\n')
-
-    # ds.upload_files([os.path.join(os.getcwd(), 'filestamp.txt')], overwrite=True)
 
 
 def delete_data_from_blob(prefix):
