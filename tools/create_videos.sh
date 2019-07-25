@@ -5,7 +5,7 @@
 # Use this script to create video files from the images included in the ucsd anomaly dataset
 
 for set in Train Test; do
-    input_folders=`find ./ucsd_ad -type d -name "${set}0*"`
+    input_folders=`find ./data -type d -name "${set}0*"`
 
     for input_folder in $input_folders; do
         output_folder=ucsd_ad_vid/`echo ${input_folder} | cut -f 3- -d "/"`
