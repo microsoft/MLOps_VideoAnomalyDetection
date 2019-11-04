@@ -100,5 +100,7 @@ venv.bak/
 # mkdocs documentation
 /site
 
+src/video_anomaly_detection/_version.py
+
 # mypy
 .mypy_cache/
