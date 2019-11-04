@@ -163,6 +163,7 @@ test:
   # apk add git here.
   # If using an image that does not include tox, we will
   # need to pip install tox here.
+  - pip install tox
   # With --sitepackages, we can save time by installing once
   # for both regular tests and documentation checks.
   - python -c "import enum; print(enum.__file__)"
