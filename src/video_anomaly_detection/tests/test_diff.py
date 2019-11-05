@@ -5,6 +5,7 @@ import tempfile
 import numpy as np
 
 import prednet.data_input
+import prednet.evaluate
 import prednet.train
 
 
