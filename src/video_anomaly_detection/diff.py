@@ -22,26 +22,21 @@ from scipy.ndimage import gaussian_filter
 import argparse
 
 
-def mse_test():
+def mse_test(DATA_DIR, WEIGHTS_DIR, lengthOfVideoSequences=8, save_path='.'):
   # Define args
   parser = argparse.ArgumentParser(description='Process input arguments')
   parser.add_argument('--out_data', default='./data/video/', type=str, dest='out_data', help='path to data and annotations (annotations should be in <data_dir>/<dataset>/Test/<dataset>.m')
-  parser.add_argument('--preprocessed_data', default='./data/video/', type=str, dest='preprocessed_data', help='path to data and annotations (annotations should be in <data_dir>/<dataset>/Test/<dataset>.m')
-  parser.add_argument('--dataset', default='UCSDped1', type=str, dest='dataset', help='dataset we are using')
-  parser.add_argument('--nt', default=200, type=int, dest='nt', help='length of video sequences')
   parser.add_argument('--n_plot', default=0, type=int, dest='n_plot', help='How many sample sequences to plot')
   parser.add_argument('--batch_size', default=10, type=int, dest='batch_size', help='How many epochs per batch')
   parser.add_argument('--N_seq', default=None, type=int, dest='N_seq', help='how many videos per epoch')
   parser.add_argument('--save_prediction_error_video_frames', action='store_true', dest='save_prediction_error_video_frames', help='how many videos per epoch')
   
-  args = parser.parse_args()
-  preprocessed_data = args.preprocessed_data
-  dataset = args.dataset
-  nt = args.nt
-  n_plot = args.n_plot
-  batch_size = args.batch_size
-  N_seq = args.N_seq
-  save_prediction_error_video_frames = args.save_prediction_error_video_frames
+  #args = parser.parse_args()
+  nt = lengthOfVideoSequences
+  n_plot = 0
+  batch_size = 4
+  N_seq = None
+  save_prediction_error_video_frames = False
   
   
   if tf.test.is_gpu_available():
@@ -55,15 +50,12 @@ def mse_test():
   #os.makedirs(data_dir, exist_ok=True)
   
   # load the dataset 
-  test_file = os.path.join('data', 'X_test.hkl')
-  test_sources = os.path.join('data', 'sources_test.hkl')
-  X = hkl.load(test_file)
-  sources = hkl.load(test_sources)
-  
+  test_file = os.path.join(DATA_DIR, 'X_test.hkl')
+  test_sources = os.path.join(DATA_DIR, 'sources_test.hkl')
   
   # load the trained model
-  weights_file = os.path.join('outputs', 'weights.hdf5')
-  json_file = os.path.join('outputs', 'model.json')
+  weights_file = os.path.join(WEIGHTS_DIR, 'weights.hdf5')
+  json_file = os.path.join(WEIGHTS_DIR, 'model.json')
   f = open(json_file, 'r')
   json_string = f.read()
   f.close()

@@ -7,6 +7,7 @@ import numpy as np
 import prednet.data_input
 import prednet.evaluate
 import prednet.train
+import video_anomaly_detection.diff
 
 
 def test_black(capsys):
@@ -27,5 +28,6 @@ def test_black(capsys):
       prednet.evaluate.evaluate_json_model(tempdirpath, tempdirpath, tempdirpath,
                                            path_to_save_prediction_scores='prediction_scores.txt',
                                            weights_path=weights_path)
+      video_anomaly_detection.diff.mse_test(tempdirpath, tempdirpath, save_path=tempdirpath)
     assert os.path.exists(os.path.join(tempdirpath, 'prednet_model.json'))
 
