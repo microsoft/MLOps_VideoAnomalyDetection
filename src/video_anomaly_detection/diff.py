@@ -22,7 +22,7 @@ from scipy.ndimage import gaussian_filter
 import argparse
 
 
-def mse_test(DATA_DIR, WEIGHTS_DIR, lengthOfVideoSequences=8, save_path='.'):
+def mse_test(DATA_DIR, model_json_path, weights_hdf5_path, lengthOfVideoSequences=8, save_path='.'):
   # Define args
   parser = argparse.ArgumentParser(description='Process input arguments')
   parser.add_argument('--out_data', default='./data/video/', type=str, dest='out_data', help='path to data and annotations (annotations should be in <data_dir>/<dataset>/Test/<dataset>.m')
@@ -54,13 +54,10 @@ def mse_test(DATA_DIR, WEIGHTS_DIR, lengthOfVideoSequences=8, save_path='.'):
   test_sources = os.path.join(DATA_DIR, 'sources_test.hkl')
   
   # load the trained model
-  weights_file = os.path.join(WEIGHTS_DIR, 'weights.hdf5')
-  json_file = os.path.join(WEIGHTS_DIR, 'model.json')
-  f = open(json_file, 'r')
-  json_string = f.read()
-  f.close()
+  with open(model_json_path, 'r') as jsonFile:
+    json_string = jsonFile.read()
   trained_model = model_from_json(json_string, custom_objects = {'PredNet': PredNet})
-  trained_model.load_weights(weights_file)
+  trained_model.load_weights(weights_hdf5_path)
   
   # Create testing model (to output predictions)
   layer_config = trained_model.layers[1].get_config()

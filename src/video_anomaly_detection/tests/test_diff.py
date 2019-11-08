@@ -28,6 +28,7 @@ def test_black(capsys):
       prednet.evaluate.evaluate_json_model(tempdirpath, tempdirpath, tempdirpath,
                                            path_to_save_prediction_scores='prediction_scores.txt',
                                            weights_path=weights_path)
-      video_anomaly_detection.diff.mse_test(tempdirpath, tempdirpath, save_path=tempdirpath)
+      video_anomaly_detection.diff.mse_test(tempdirpath, os.path.join(tempdirpath, 'prednet_model.json'), os.path.join(tempdirpath, 'prednet_weights.hdf5'),
+                                            save_path=tempdirpath)
     assert os.path.exists(os.path.join(tempdirpath, 'prednet_model.json'))
 
