@@ -3,6 +3,7 @@ import hickle
 import os.path
 import tempfile
 import numpy as np
+import pandas as pd
 
 import prednet.data_input
 import prednet.evaluate
@@ -12,6 +13,7 @@ import video_anomaly_detection.diff
 
 def test_black(capsys):
   array = np.zeros((32, 8, 8, 3))
+  array[-1, :, :, :] = 1
   with tempfile.TemporaryDirectory() as tempdirpath:
     prednet.data_input.save_array_as_hickle(array, ['black' for frame in array], tempdirpath)
     for filename in ('X_train.hkl', 'X_validate.hkl', 'X_test.hkl',
@@ -31,5 +33,6 @@ def test_black(capsys):
       video_anomaly_detection.diff.mse_test(tempdirpath, os.path.join(tempdirpath, 'prednet_model.json'),
                                             weights_path,
                                             save_path=tempdirpath)
+      test_results = pd.read_pickle(os.path.join(tempdirpath, 'test_results.pkl.gz'))
     assert os.path.exists(os.path.join(tempdirpath, 'prednet_model.json'))
 

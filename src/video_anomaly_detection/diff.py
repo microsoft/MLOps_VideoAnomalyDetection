@@ -131,7 +131,12 @@ def mse_test(DATA_DIR, model_json_path, weights_hdf5_path, lengthOfVideoSequence
   prev_std = np.reshape(prev_std, np.prod(prev_mse.shape))
   
   # save the results to a dataframe
-  df = pd.DataFrame({'model_mse': model_mse, 'model_p_50': model_p_50, 'model_p_75': model_p_75, 'model_p_90': model_p_90, 'model_p_95': model_p_95, 'model_p_99': model_p_99, 'model_std': model_std, 'prev_mse': prev_mse, 'prev_p_50': prev_p_50, 'prev_p_75': prev_p_75, 'prev_p_90': prev_p_90, 'prev_p_95': prev_p_95, 'prev_p_99': prev_p_99, 'prev_std': prev_std})
+  df = pd.DataFrame({'model_mse': model_mse,
+                     'model_p_50': model_p_50, 'model_p_75': model_p_75, 'model_p_90': model_p_90, 'model_p_95': model_p_95, 'model_p_99': model_p_99,
+                     'model_std': model_std,
+                     'prev_mse': prev_mse,
+                     'prev_p_50': prev_p_50, 'prev_p_75': prev_p_75, 'prev_p_90': prev_p_90, 'prev_p_95': prev_p_95, 'prev_p_99': prev_p_99,
+                     'prev_std': prev_std})
   df.to_pickle(os.path.join(save_path, 'test_results.pkl.gz'))
   
   
