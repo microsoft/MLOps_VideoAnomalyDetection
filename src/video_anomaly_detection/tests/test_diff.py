@@ -36,8 +36,8 @@ def test_black(capsys):
                                             save_path=tempdirpath)
       test_results = pd.read_pickle(os.path.join(tempdirpath, 'test_results.pkl.gz'))
       model_mse = test_results['model_mse']
-      model_mse = np.reshape(model_mse, (8, 8, 8, 3))
-      if model_mse.shape != (8, 8, 8, 3):
+      if model_mse.shape != (8,):
         raise Exception(model_mse.shape, model_mse)
-      assert np.count_nonzero(model_mse[-2]) == 0
+      assert model_mse[-2] == 0
+      assert model_mse[-1] > 0
     assert os.path.exists(os.path.join(tempdirpath, 'prednet_model.json'))
