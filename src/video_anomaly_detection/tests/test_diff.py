@@ -20,7 +20,8 @@ def test_black(capsys):
                      'sources_train.hkl', 'sources_validate.hkl', 'sources_test.hkl'):
       assert os.path.exists(os.path.join(tempdirpath, filename))
     for split in ('train', 'validate', 'test'):
-      assert hickle.load(os.path.join(tempdirpath, 'X_{}.hkl'.format(split))).shape[0] == len(hickle.load(os.path.join(tempdirpath, 'sources_{}.hkl'.format(split))))
+      assert (hickle.load(os.path.join(tempdirpath, 'X_{}.hkl'.format(split))).shape[0] ==
+              len(hickle.load(os.path.join(tempdirpath, 'sources_{}.hkl'.format(split)))))
     with capsys.disabled():
       prednet.train.train_on_hickles(tempdirpath, tempdirpath, array.shape[1], array.shape[2],
                                      number_of_epochs=4, steps_per_epoch=8,
@@ -34,5 +35,5 @@ def test_black(capsys):
                                             weights_path,
                                             save_path=tempdirpath)
       test_results = pd.read_pickle(os.path.join(tempdirpath, 'test_results.pkl.gz'))
+      assert np.count_nonzero(test_results['model_mse'][-2]) == 0
     assert os.path.exists(os.path.join(tempdirpath, 'prednet_model.json'))
-
