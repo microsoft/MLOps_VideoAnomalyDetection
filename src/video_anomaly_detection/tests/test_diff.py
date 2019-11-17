@@ -45,10 +45,12 @@ def test_black(capsys):
       assert model_mse.iloc[-1] > 0
     assert os.path.exists(os.path.join(tempdirpath, 'prednet_model.json'))
 
+
 class StubCapSys:
   def disabled(self):
     import contextlib
     return contextlib.suppress(*[])
+
 
 if __name__ == "__main__":
   """
