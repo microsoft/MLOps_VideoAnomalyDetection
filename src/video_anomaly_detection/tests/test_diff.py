@@ -30,9 +30,11 @@ def test_black(capsys):
                                      path_to_save_model_json=os.path.join(tempdirpath, 'prednet_model.json'))
       weights_path = os.path.join(tempdirpath, 'zero_weights.hdf5')
       assert os.path.exists(weights_path)
-      prednet.evaluate.evaluate_json_model(tempdirpath, tempdirpath, tempdirpath,
+      prednet.evaluate.evaluate_on_hickles(tempdirpath,
                                            path_to_save_prediction_scores='prediction_scores.txt',
-                                           weights_path=weights_path)
+                                           path_to_model_json=os.path.join(tempdirpath, 'prednet_model.json'),
+                                           weights_path=weights_path,
+                                           RESULTS_SAVE_DIR=tempdirpath)
       video_anomaly_detection.diff.mse_test(tempdirpath, os.path.join(tempdirpath, 'prednet_model.json'),
                                             weights_path,
                                             save_path=tempdirpath)
