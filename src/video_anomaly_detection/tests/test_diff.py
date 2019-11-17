@@ -35,7 +35,7 @@ def test_black(capsys):
                                            path_to_model_json=os.path.join(tempdirpath, 'prednet_model.json'),
                                            weights_path=weights_path,
                                            RESULTS_SAVE_DIR=tempdirpath)
-      save_path='/tmp/videoAnomalies'
+      save_path = '/tmp/videoAnomalies'
       video_anomaly_detection.diff.mse_test(tempdirpath, os.path.join(tempdirpath, 'prednet_model.json'),
                                             weights_path,
                                             save_path=save_path)

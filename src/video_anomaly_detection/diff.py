@@ -16,8 +16,16 @@ import tensorflow as tf
 from prednet.data_utils import TestsetGenerator
 import prednet.evaluate
 from scipy.ndimage import gaussian_filter
+import skvideo.io
 
 matplotlib.use('Agg')
+
+
+def show_anomalies_as_overlay_single_video(path_to_video,
+                                           number_of_epochs=150, steps_per_epoch=125,
+                                           ):
+  path_to_save_overlay_video = os.path.splitext(path_to_video)[0] + '.overlay.' + os.path.splitext(path_to_video)[1]
+  predictedFrames = prednet.evaluate.get_predicted_frames_for_single_video(path_to_video, number_of_epochs, steps_per_epoch)
 
 
 def mse_test(DATA_DIR, model_json_path, weights_hdf5_path, lengthOfVideoSequences=8, save_path='.'):
