@@ -26,6 +26,12 @@ def show_anomalies_as_overlay_single_video(path_to_video,
                                            ):
   path_to_save_overlay_video = os.path.splitext(path_to_video)[0] + '.overlay.' + os.path.splitext(path_to_video)[1]
   predictedFrames = prednet.evaluate.get_predicted_frames_for_single_video(path_to_video, number_of_epochs, steps_per_epoch)
+  actualFrames = skvideo.io.vread(path_to_video)
+  assert actualFrames.shape == predictedFrames.shape
+  overlayVideo = np.empty(actualFrames.shape)
+  for index,frame in enumerate(overlayVideo):
+    overlayVideo[index, :] = overlay_frame_error(predictedFrames[index], frame)
+  skvideo.io.vwrite(path_to_save_overlay_video, overlayVideo)
 
 
 def mse_test(DATA_DIR, model_json_path, weights_hdf5_path, lengthOfVideoSequences=8, save_path='.'):
@@ -208,12 +214,7 @@ def mse_test(DATA_DIR, model_json_path, weights_hdf5_path, lengthOfVideoSequence
 
       for i in plot_idx:
           for tt in range(nt):
-              err = np.abs(X_hat[i,tt] - X_test[i,tt])
-
-              err_ov = gaussian_filter(err, 3)
-              err_ov[err_ov < .1] = 0.0
-              overlay = X_test[i,tt].copy()
-              overlay[:,:,0] += err_ov[:,:,0]*5.0
+              overlay = overlay_frame_error(X_hat[i,tt], X_test[i,tt])
 
               plt.imshow(overlay, interpolation='none')
               plt.tick_params(axis='both', which='both', bottom='off', top='off', left='off', right='off',
@@ -221,3 +222,14 @@ def mse_test(DATA_DIR, model_json_path, weights_hdf5_path, lengthOfVideoSequence
 
               plt.savefig(os.path.join(movie_save_dir,  'frame_%02d_%03d.png' % (i, tt)))
               plt.close()
+
+
+def overlay_frame_error(predictedFrame, actualFrame):
+    assert predictedFrame.shape == actualFrame.shape
+    err = np.abs(predictedFrame - actualFrame)
+
+    err_ov = gaussian_filter(err, 3)
+    err_ov[err_ov < .1] = 0.0
+    overlay = actualFrame.copy()
+    overlay[:,:,0] += err_ov[:,:,0]*5.0
+    return overlay
