@@ -35,10 +35,11 @@ def test_black(capsys):
                                            path_to_model_json=os.path.join(tempdirpath, 'prednet_model.json'),
                                            weights_path=weights_path,
                                            RESULTS_SAVE_DIR=tempdirpath)
+      save_path='/tmp/videoAnomalies'
       video_anomaly_detection.diff.mse_test(tempdirpath, os.path.join(tempdirpath, 'prednet_model.json'),
                                             weights_path,
-                                            save_path=tempdirpath)
-      test_results = pd.read_pickle(os.path.join(tempdirpath, 'test_results.pkl.gz'))
+                                            save_path=save_path)
+      test_results = pd.read_pickle(os.path.join(save_path, 'test_results.pkl.gz'))
       model_mse = test_results['model_mse']
       assert type(model_mse) is pd.Series
       if model_mse.shape != (8,):

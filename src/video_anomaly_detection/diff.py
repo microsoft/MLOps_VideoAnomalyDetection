@@ -12,12 +12,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from keras.layers import Input
 # from keras import backend as K
-from keras.models import Model
-from keras.models import model_from_json
 from prednet.data_utils import TestsetGenerator
-from prednet.prednet import PredNet
 import prednet.evaluate
 from scipy.ndimage import gaussian_filter
 
@@ -37,10 +33,11 @@ def mse_test(DATA_DIR, model_json_path, weights_hdf5_path, lengthOfVideoSequence
 
   # args = parser.parse_args()
   nt = lengthOfVideoSequences
-  n_plot = 0
   batch_size = 4
   N_seq = None
-  save_prediction_error_video_frames = False
+
+  n_plot = 1
+  save_prediction_error_video_frames = True
 
   if tf.test.is_gpu_available():
       print("We have a GPU")
@@ -72,6 +69,8 @@ def mse_test(DATA_DIR, model_json_path, weights_hdf5_path, lengthOfVideoSequence
   # Calculate MSE of PredNet predictions vs. using last frame, and aggregate across all frames in dataset
   model_mse = np.mean( (X_test[:, 1:] - X_hat[:, 1:])**2 )  # look at all timesteps except the first
   prev_mse = np.mean( (X_test[:, :-1] - X_test[:, 1:])**2 )  # this simply using the last frame
+
+  os.makedirs(save_path, exist_ok=True)
 
   #  Write results to prediction_scores.txt
   f = open(os.path.join(save_path, 'prediction_scores.txt'), 'w')
