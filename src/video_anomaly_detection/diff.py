@@ -18,6 +18,7 @@ from keras.models import Model
 from keras.models import model_from_json
 from prednet.data_utils import TestsetGenerator
 from prednet.prednet import PredNet
+import prednet.evaluate
 from scipy.ndimage import gaussian_filter
 
 matplotlib.use('Agg')
@@ -55,22 +56,8 @@ def mse_test(DATA_DIR, model_json_path, weights_hdf5_path, lengthOfVideoSequence
   test_file = os.path.join(DATA_DIR, 'X_test.hkl')
   test_sources = os.path.join(DATA_DIR, 'sources_test.hkl')
 
-  # load the trained model
-  with open(model_json_path, 'r') as jsonFile:
-    json_string = jsonFile.read()
-  trained_model = model_from_json(json_string, custom_objects={'PredNet': PredNet})
-  trained_model.load_weights(weights_hdf5_path)
-
-  # Create testing model (to output predictions)
-  layer_config = trained_model.layers[1].get_config()
-  layer_config['output_mode'] = 'prediction'
-  data_format = layer_config['data_format'] if 'data_format' in layer_config else layer_config['dim_ordering']
-  test_prednet = PredNet(weights=trained_model.layers[1].get_weights(), **layer_config)
-  input_shape = list(trained_model.layers[0].batch_input_shape[1:])
-  input_shape[0] = nt
-  inputs = Input(shape=tuple(input_shape))
-  predictions = test_prednet(inputs)
-  test_model = Model(inputs=inputs, outputs=predictions)
+  test_model, data_format = prednet.evaluate.make_evaluation_model(model_json_path, weights_hdf5_path,
+                                                                   nt=lengthOfVideoSequences)
 
   # Define Generator for test sequences
   test_generator = TestsetGenerator(test_file, test_sources, nt, data_format=data_format, N_seq=N_seq)
