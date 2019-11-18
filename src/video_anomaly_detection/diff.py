@@ -30,7 +30,8 @@ def show_anomalies_as_overlay_single_video(path_to_video,
   predictedFrames = prednet.evaluate.get_predicted_frames_for_single_video(path_to_video, number_of_epochs, steps_per_epoch)
   if actualFrames.dtype != predictedFrames.dtype:
     raise Exception(actualFrames.dtype, predictedFrames.dtype)
-  assert predictedFrames.size == actualFrames.size
+  if predictedFrames.size != actualFrames.size:
+    raise Exception(actualFrames.shape, predictedFrames.shape)
   predictedFrames = predictedFrames.reshape(-1, *predictedFrames.shape[2:])
   if actualFrames.shape != predictedFrames.shape:
     raise Exception(actualFrames.shape, predictedFrames.shape)
