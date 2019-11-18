@@ -20,8 +20,8 @@ import video_anomaly_detection.diff
 
 parser = argparse.ArgumentParser(description='Overlay video anomalies.')
 parser.add_argument('path_to_video', help="Path to video file.")
-parser.add_argument('--number-of-epochs', type=int, help="Number of epochs to use in training.")
-parser.add_argument('--steps-per-epoch', type=int, help="Steps per epoch to use in training.")
+parser.add_argument('--number-of-epochs', type=int, default=150, help="Number of epochs to use in training.")
+parser.add_argument('--steps-per-epoch', type=int, default=125, help="Steps per epoch to use in training.")
 
 
 def main(args=None):
