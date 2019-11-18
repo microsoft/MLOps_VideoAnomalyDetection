@@ -16,11 +16,15 @@ Why does this file exist, and why not put this in __main__?
 """
 import argparse
 
-parser = argparse.ArgumentParser(description='Command description.')
-parser.add_argument('names', metavar='NAME', nargs=argparse.ZERO_OR_MORE,
-                    help="A name of something.")
+import video_anomaly_detection.diff
+
+parser = argparse.ArgumentParser(description='Overlay video anomalies.')
+parser.add_argument('path_to_video', help="Path to video file.")
+parser.add_argument('--number-of-epochs', type=int, help="Number of epochs to use in training.")
+parser.add_argument('--steps-per-epoch', type=int, help="Steps per epoch to use in training.")
 
 
 def main(args=None):
     args = parser.parse_args(args=args)
-    print(args.names)
+    video_anomaly_detection.diff.show_anomalies_as_overlay_single_video(args.path_to_video,
+        number_of_epochs=args.number_of_epochs, steps_per_epoch=args.steps_per_epoch)

@@ -14,6 +14,7 @@ import prednet.evaluate
 import prednet.train
 
 import video_anomaly_detection.diff
+import video_anomaly_detection.cli
 
 
 def test_black(capsys):
@@ -57,7 +58,7 @@ def test_black(capsys):
 def test_single_video():
   videoFile = pkg_resources.resource_filename('prednet.tests', os.path.join('resources', 'black.mpg'))
   assert os.path.exists(videoFile)
-  video_anomaly_detection.diff.show_anomalies_as_overlay_single_video(videoFile, number_of_epochs=4, steps_per_epoch=8)
+  video_anomaly_detection.cli.main([videoFile, '--number-of-epochs', '4', '--steps-per-epoch', '8'])
 
 
 class StubCapSys:
