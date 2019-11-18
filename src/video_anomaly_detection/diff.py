@@ -27,7 +27,8 @@ def show_anomalies_as_overlay_single_video(path_to_video,
   path_to_save_overlay_video = os.path.splitext(path_to_video)[0] + '.overlay.' + os.path.splitext(path_to_video)[1]
   predictedFrames = prednet.evaluate.get_predicted_frames_for_single_video(path_to_video, number_of_epochs, steps_per_epoch)
   actualFrames = skvideo.io.vread(path_to_video)
-  assert actualFrames.shape == predictedFrames.shape
+  if actualFrames.shape != predictedFrames.shape:
+    raise Exception(actualFrames.shape, predictedFrames.shape)
   overlayVideo = np.empty(actualFrames.shape)
   for index,frame in enumerate(overlayVideo):
     overlayVideo[index, :] = overlay_frame_error(predictedFrames[index], frame)
