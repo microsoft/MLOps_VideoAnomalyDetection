@@ -26,5 +26,6 @@ parser.add_argument('--steps-per-epoch', type=int, help="Steps per epoch to use 
 
 def main(args=None):
     args = parser.parse_args(args=args)
-    video_anomaly_detection.diff.show_anomalies_as_overlay_single_video(args.path_to_video,
+    video_anomaly_detection.diff.show_anomalies_as_overlay_single_video(
+        args.path_to_video,
         number_of_epochs=args.number_of_epochs, steps_per_epoch=args.steps_per_epoch)

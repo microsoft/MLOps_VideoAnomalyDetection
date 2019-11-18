@@ -1,20 +1,20 @@
 
 import os.path
-import pkg_resources
-import pytest
 import tempfile
 
 import hickle
 import numpy as np
 import pandas as pd
-import skvideo.io
-import prednet.tests
+import pkg_resources
 import prednet.data_input
 import prednet.evaluate
+import prednet.tests
 import prednet.train
+import pytest
+import skvideo.io
 
-import video_anomaly_detection.diff
 import video_anomaly_detection.cli
+import video_anomaly_detection.diff
 
 
 def test_black(capsys):
