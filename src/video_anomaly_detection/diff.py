@@ -11,12 +11,12 @@ import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import prednet.evaluate
+import skvideo.io
 import tensorflow as tf
 # from keras import backend as K
 from prednet.data_utils import TestsetGenerator
-import prednet.evaluate
 from scipy.ndimage import gaussian_filter
-import skvideo.io
 
 matplotlib.use('Agg')
 
