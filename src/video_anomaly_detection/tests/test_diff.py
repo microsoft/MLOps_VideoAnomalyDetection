@@ -1,10 +1,14 @@
 
 import os.path
+import pkg_resources
+import pytest
 import tempfile
 
 import hickle
 import numpy as np
 import pandas as pd
+import skvideo.io
+import prednet.tests
 import prednet.data_input
 import prednet.evaluate
 import prednet.train
@@ -49,6 +53,13 @@ def test_black(capsys):
     assert os.path.exists(os.path.join(tempdirpath, 'prednet_model.json'))
 
 
+@pytest.mark.skipif(not skvideo.io.io._HAS_FFMPEG, reason='We cannot test loading a video without the video-loading library installed.')
+def test_single_video():
+  videoFile = pkg_resources.resource_filename('prednet.tests', os.path.join('resources', 'black.mpg'))
+  assert os.path.exists(videoFile)
+  video_anomaly_detection.diff.show_anomalies_as_overlay_single_video(videoFile, number_of_epochs=4, steps_per_epoch=8)
+
+
 class StubCapSys:
   def disabled(self):
     import contextlib
@@ -59,4 +70,5 @@ if __name__ == "__main__":
   """
   If having GPU problems, try running with CUDA_VISIBLE_DEVICES= to run on CPU.
   """
+  test_single_video()
   test_black(StubCapSys())

@@ -24,15 +24,24 @@ matplotlib.use('Agg')
 def show_anomalies_as_overlay_single_video(path_to_video,
                                            number_of_epochs=150, steps_per_epoch=125,
                                            ):
-  path_to_save_overlay_video = os.path.splitext(path_to_video)[0] + '.overlay.' + os.path.splitext(path_to_video)[1]
-  predictedFrames = prednet.evaluate.get_predicted_frames_for_single_video(path_to_video, number_of_epochs, steps_per_epoch)
+  path_to_save_overlay_video = os.path.splitext(path_to_video)[0] + '.overlay' + os.path.splitext(path_to_video)[1]
   actualFrames = skvideo.io.vread(path_to_video)
+  actualFrames = actualFrames.astype('float32') / 255
+  predictedFrames = prednet.evaluate.get_predicted_frames_for_single_video(path_to_video, number_of_epochs, steps_per_epoch)
+  if actualFrames.dtype != predictedFrames.dtype:
+    raise Exception(actualFrames.dtype, predictedFrames.dtype)
+  predictedFrames = predictedFrames.reshape(-1, *predictedFrames.shape[2:])
   if actualFrames.shape != predictedFrames.shape:
     raise Exception(actualFrames.shape, predictedFrames.shape)
-  overlayVideo = np.empty(actualFrames.shape)
-  for index,frame in enumerate(overlayVideo):
+  if actualFrames.dtype != predictedFrames.dtype:
+    raise Exception(actualFrames.dtype, predictedFrames.dtype)
+  overlayVideo = np.empty(actualFrames.shape, dtype=actualFrames.dtype)
+  for index,frame in enumerate(actualFrames):
+    assert frame.shape == predictedFrames[index].shape
+    assert frame.dtype == predictedFrames[index].dtype
     overlayVideo[index, :] = overlay_frame_error(predictedFrames[index], frame)
   skvideo.io.vwrite(path_to_save_overlay_video, overlayVideo)
+  print('show_anomalies_as_overlay_single_video saved', path_to_save_overlay_video)
 
 
 def mse_test(DATA_DIR, model_json_path, weights_hdf5_path, lengthOfVideoSequences=8, save_path='.'):
@@ -232,5 +241,9 @@ def overlay_frame_error(predictedFrame, actualFrame):
     err_ov = gaussian_filter(err, 3)
     err_ov[err_ov < .1] = 0.0
     overlay = actualFrame.copy()
+    assert len(overlay.shape) == 3
+    assert overlay.shape[2] == 3
+    assert len(err_ov.shape) == 3
+    assert err_ov.shape[2] == 3
     overlay[:,:,0] += err_ov[:,:,0]*5.0
     return overlay
