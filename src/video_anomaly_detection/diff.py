@@ -4,6 +4,7 @@ Run trained PredNet on UCSD sequences to create data for anomaly detection
 
 import argparse
 import os
+import resource
 import shutil
 
 import matplotlib
@@ -25,9 +26,16 @@ def show_anomalies_as_overlay_single_video(path_to_video,
                                            number_of_epochs=150, steps_per_epoch=125,
                                            ):
   path_to_save_overlay_video = os.path.splitext(path_to_video)[0] + '.overlay' + os.path.splitext(path_to_video)[1]
-  actualFrames = skvideo.io.vread(path_to_video)
-  actualFrames = actualFrames.astype('float32') / 255
   predictedFrames = prednet.evaluate.get_predicted_frames_for_single_video(path_to_video, number_of_epochs, steps_per_epoch)
+
+  # There is no need to have actualFrames in memory when computing predictedFrames, so we load actualFrames afterward.
+  print('show_anomalies_as_overlay_single_video about to call skvideo.io.vread, memory usage',
+        resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+  actualFrames = skvideo.io.vread(path_to_video)
+  print('show_anomalies_as_overlay_single_video returned from skvideo.io.vread, memory usage',
+        resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+  actualFrames = actualFrames.astype('float32') / 255
+
   if actualFrames.dtype != predictedFrames.dtype:
     raise Exception(actualFrames.dtype, predictedFrames.dtype)
   if predictedFrames.size != actualFrames.size:
