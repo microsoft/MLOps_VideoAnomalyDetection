@@ -31,6 +31,7 @@ def show_anomalies_as_overlay_single_video(path_to_video,
   # There is no need to have actualFrames in memory when computing predictedFrames, so we load actualFrames afterward.
   print('show_anomalies_as_overlay_single_video about to call skvideo.io.vread, memory usage',
         resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+  # use vreader to save memory
   actualFrames = skvideo.io.vread(path_to_video)
   print('show_anomalies_as_overlay_single_video returned from skvideo.io.vread, memory usage',
         resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
