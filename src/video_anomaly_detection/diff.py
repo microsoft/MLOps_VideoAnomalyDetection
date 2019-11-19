@@ -40,7 +40,7 @@ def show_anomalies_as_overlay_single_video(path_to_video,
   if actualFrames.dtype != predictedFrames.dtype:
     raise Exception(actualFrames.dtype, predictedFrames.dtype)
   if predictedFrames.size != actualFrames.size:
-    raise Exception(actualFrames.shape, predictedFrames.shape)
+    raise Exception(actualFrames.shape, actualFrames.size, predictedFrames.shape, predictedFrames.size)
   predictedFrames = predictedFrames.reshape(-1, *predictedFrames.shape[2:])
   if actualFrames.shape != predictedFrames.shape:
     raise Exception(actualFrames.shape, predictedFrames.shape)
