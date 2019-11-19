@@ -53,6 +53,11 @@ def show_anomalies_as_overlay_single_video(path_to_video,
     assert frame.shape == predictedFrames[index].shape
     assert frame.dtype == predictedFrames[index].dtype
     overlayVideo[index, :] = overlay_frame_error(predictedFrames[index], frame)
+  assert overlayVideo.dtype == np.float32
+  # If the overlay generated any pixels greater than 1, cap them at 1.
+  overlayVideo[overlayVideo > 1] = 1
+  overlayVideo = (overlayVideo * 255).astype(np.uint8)
+  assert overlayVideo.dtype == np.uint8
   skvideo.io.vwrite(path_to_save_overlay_video, overlayVideo)
   print('show_anomalies_as_overlay_single_video saved', path_to_save_overlay_video)
 
