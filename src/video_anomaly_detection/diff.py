@@ -35,6 +35,8 @@ def show_anomalies_as_overlay_single_video(path_to_video,
   actualFrames = skvideo.io.vread(path_to_video)
   print('show_anomalies_as_overlay_single_video returned from skvideo.io.vread, memory usage',
         resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+  if actualFrames.shape[0] % 8 != 0:
+    actualFrames = np.pad(actualFrames, (8 - (actualFrames.shape[0] % 8), 0, 0, 0), 'edge')
   actualFrames = actualFrames.astype('float32') / 255
 
   if actualFrames.dtype != predictedFrames.dtype:
