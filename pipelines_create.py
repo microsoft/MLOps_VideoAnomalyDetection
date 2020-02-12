@@ -250,7 +250,7 @@ def build_pipeline(dataset, ws, config):
                             wait_for_provisioning=True,
                             description="Datastore scheduler for Pipeline" + pipeline_name,
                             path_on_datastore=os.path.join('prednet/data/video', dataset, 'Train'),
-                            polling_interval=1
+                            polling_interval=60*24
                             )
 
     return pipeline_name
