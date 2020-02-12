@@ -290,7 +290,7 @@ for blob in generator:
         print("Found dataset:", dataset)
 
 # Get all published pipeline objects in the workspace
-all_pub_pipelines = PublishedPipeline.get_all(ws)
+all_pub_pipelines = PublishedPipeline.list(ws)
 
 # Create a list of datasets for which we have (old) and don't have (new) a published pipeline
 old_datasets = []
