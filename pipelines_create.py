@@ -233,7 +233,7 @@ def build_pipeline(dataset, ws, config):
     )
     register_classification_model.run_after(register_classification_model)
 
-    pipeline = Pipeline(workspace=ws, steps=[video_decoding, data_prep, hd_step, register_prednet])
+    pipeline = Pipeline(workspace=ws, steps=[video_decoding, data_prep, hd_step, register_prednet, register_classification_model])
     print ("Pipeline is built")
 
     pipeline.validate()
