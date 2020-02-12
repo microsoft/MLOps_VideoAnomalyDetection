@@ -51,6 +51,9 @@ def build_pipeline(dataset, ws, config):
     shutil.copy(os.path.join(base_dir, 'register_classification_model.py'), script_folder)
     shutil.copy(os.path.join(base_dir, 'config.json'), script_folder)
     
+    os.makedirs(os.path.join(script_folder, 'models/logistic_regression'))
+    shutil.copy(os.path.join(base_dir, 'models/logistic_regression/model.pkl'), os.path.join(script_folder, 'models/logistic_regression/'))
+
     cpu_compute_name = config['cpu_compute']
     try:
         cpu_compute_target = AmlCompute(ws, cpu_compute_name)

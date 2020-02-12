@@ -89,6 +89,10 @@ shutil.copy(os.path.join(base_dir, 'data_preparation.py'), script_folder)
 shutil.copy(os.path.join(base_dir, 'register_prednet.py'), script_folder)
 shutil.copy(os.path.join(base_dir, 'register_classification_model.py'), script_folder)
 shutil.copy(os.path.join(base_dir, 'config.json'), script_folder)
+
+os.makedirs(os.path.join(script_folder, 'models/logistic_regression'))
+shutil.copy(os.path.join(base_dir, 'models/logistic_regression/model.pkl'), os.path.join(script_folder, 'models/logistic_regression/'))
+
     
 hash_paths = os.listdir(script_folder)
 
