@@ -231,7 +231,7 @@ def build_pipeline(dataset, ws, config):
         allow_reuse=True,
         hash_paths=['.']
     )
-    register_classification_model.run_after(register_classification_model)
+    register_classification_model.run_after(register_prednet)
 
     pipeline = Pipeline(workspace=ws, steps=[video_decoding, data_prep, hd_step, register_prednet, register_classification_model])
     print ("Pipeline is built")
@@ -254,7 +254,6 @@ def build_pipeline(dataset, ws, config):
                             )
 
     return pipeline_name
-
 
 
 # start of script (main)
