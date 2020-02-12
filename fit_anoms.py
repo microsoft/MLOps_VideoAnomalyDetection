@@ -1,4 +1,6 @@
-from settings import *
+# from settings import *
+import os
+import pickle
 import pandas as pd
 import numpy as np
 import sklearn
@@ -16,7 +18,11 @@ import seaborn as sns
 
 # check/create path for saving output
 dataset = 'UCSDped1'
-save_path = os.path.join('./results', dataset)
+save_path = os.path.join('results', dataset)
+
+local_model_path = os.path.join("models", "logistic_regression")
+os.makedirs(local_model_path, exist_ok=True)
+
 create_video_of_plot = False
 # path for saving movie frames
 movie_save_dir = os.path.join(save_path, 'movie_frames')
@@ -46,6 +52,10 @@ pipeline = Pipeline([('scaler',scaler), ('classifier', clf)])
 pipeline.fit(X_train, y_train)
 
 print("train accuracy: ", pipeline.score(X_train, y_train))
+
+# save the model as a .pkl file
+with open(os.path.join(local_model_path, 'model.pkl'), 'wb') as f:
+    pickle.dump(pipeline, f)
 
 if create_video_of_plot:
     n_frames = 200

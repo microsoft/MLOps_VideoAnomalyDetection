@@ -17,28 +17,31 @@ except:
 # initialize workspace from config.json
 ws = Workspace.from_config()
 
-model_name = 'prednet_UCSDped1' #config['model_name']
-model_version = 2 # config['model_version']
+prednet_model_name = 'prednet_UCSDped1' #config['model_name']
+prednet_model_version = 2 # config['model_version']
+logistic_regression_model_name = 'logistic_regression' #config['model_name']
+logistic_regression_model_version = 1 # config['model_version']
 
 
 
-cd = CondaDependencies.create(pip_packages=['keras==2.0.8', 'theano', 'tensorflow==1.8.0', 'matplotlib', 'hickle', 'pandas', 'azureml-sdk'])
+cd = CondaDependencies.create(pip_packages=['keras==2.0.8', 'theano', 'tensorflow==1.8.0', 'matplotlib', 'hickle', 'pandas', 'azureml-sdk', "scikit-learn"])
 
 cd.save_to_file(base_directory='./', conda_file_path='myenv.yml')
 
-model = Model(ws, name=model_name, version=model_version)
+prednet_model = Model(ws, name=prednet_model_name, version=prednet_model_version)
+logistic_regression_model = Model(ws, name=logistic_regression_model_name, version=logistic_regression_model_version)
 
 img_config = ContainerImage.image_configuration(execution_script="score.py", 
                                                runtime="python", 
                                                conda_file="myenv.yml",
                                                dependencies=['prednet.py', 'keras_utils.py', 'aml_config/model.json'])
 
-image_name = model_name.replace("_", "").lower()
+image_name = prednet_model_name.replace("_", "").lower()
 
 print("Image name:", image_name)
 
 image = Image.create(name = image_name,
-                     models = [model], 
+                     models = [prednet_model], 
                      image_config = img_config, 
                      workspace = ws)
 

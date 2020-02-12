@@ -1,5 +1,5 @@
 '''
-This file is meant to be run as a step in an AML pipline created by pipelines_create.py, but it can also be run independently. 
+This file is meant to be run as a step in an AML pipline created by pipelines_createf.py, but it can also be run independently. 
 
 It preprocesses video frames (stored as individual image files) so that they can be use for training a prednet architecture
 

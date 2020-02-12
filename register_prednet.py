@@ -47,23 +47,12 @@ for run in metrics.keys():
 
 print("best run", best_run_id, best_loss)
 
-from azureml.core import Run
 
 # start an Azure ML run
 run = Run.get_context()
 run_details = run.get_details()
 
 experiment_name = run_details['runDefinition']['environment']['name'].split()[1]
-
-with open('config.json', 'r') as f:
-    config = json.load(f)
-
-svc_pr = ServicePrincipalAuthentication(
-    tenant_id=config['tenant_id'],
-    service_principal_id=config['service_principal_id'],
-    service_principal_password=config['service_principal_password'])
-
-ws = Workspace.from_config(auth=svc_pr)
 
 exp = Experiment(ws, name=experiment_name)
 best_run = Run(exp, best_run_id)
@@ -77,15 +66,5 @@ if best_run_id:
                                     model_path='outputs',
                                     tags=tags)
 
-    # # Writing the registered model details to /aml_config/model.json
-    # model_json = {}
-    # model_json['model_name'] = model.name
-    # model_json['model_version'] = model.version
-    # model_json['run_id'] = best_run_id
-
-    # os.makedirs('aml_config', exist_ok=True)
-    # with open('aml_config/model.json', 'w') as outfile:
-    #     json.dump(model_json, outfile)
 else:
-    print("Couldn't not find a model to register.  Probably because no run completed")
-    raise BaseException
+    raise Exception("Couldn't not find a model to register.  Probably because no run completed")

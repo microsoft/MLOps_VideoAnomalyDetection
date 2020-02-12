@@ -290,8 +290,9 @@ val_generator = SequenceGenerator(val_file, val_sources, nt, batch_size=batch_si
 history = model.fit_generator(train_generator, samples_per_epoch / batch_size, nb_epoch, callbacks=callbacks,
                 validation_data=val_generator, validation_steps=N_seq_val / batch_size)
 
-# after training is complete, we log the final loss on the validation set
-run.log('final_val_loss', history.history['val_loss'][-1])
+if remote_execution:
+    # after training is complete, we log the final loss on the validation set
+    run.log('final_val_loss', history.history['val_loss'][-1])
 
 # create a figure of how loss changed of there course of training for validation and training set
 plt.figure(figsize=(6, 3))

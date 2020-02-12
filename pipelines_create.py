@@ -23,6 +23,7 @@ from azureml.core.authentication import ServicePrincipalAuthentication
 from azureml.core import ScriptRunConfig
 from azureml.core.container_registry import ContainerRegistry
 from azureml.pipeline.core.schedule import ScheduleRecurrence, Schedule
+from azureml.core.environment import Environment
 
 from azureml.core import VERSION
 print("azureml.core.VERSION", VERSION)
@@ -203,9 +204,9 @@ def build_pipeline(dataset, ws, config):
     )
     hd_step.run_after(data_prep)
 
-    registration_step = PythonScriptStep(
+    register_prednet = PythonScriptStep(
         name='register_model',
-        script_name='model_registration.py',
+        script_name='register_prednet.py',
         arguments=['--input_dir', data_metrics, '--output_dir', data_output],
         compute_target=cpu_compute_target,
         inputs=[data_metrics],
@@ -214,9 +215,22 @@ def build_pipeline(dataset, ws, config):
         allow_reuse=True,
         hash_paths=['.']
     )
-    registration_step.run_after(hd_step)
+    register_prednet.run_after(hd_step)
 
-    pipeline = Pipeline(workspace=ws, steps=[video_decoding, data_prep, hd_step, registration_step])
+    register_classification_model = PythonScriptStep(
+        name='register_model',
+        script_name='register_classification_model.py',
+        arguments=['--input_dir', data_metrics, '--output_dir', data_output],
+        compute_target=cpu_compute_target,
+        inputs=[data_metrics],
+        outputs=[data_output],
+        source_directory=script_folder,
+        allow_reuse=True,
+        hash_paths=['.']
+    )
+    register_classification_model.run_after(register_classification_model)
+
+    pipeline = Pipeline(workspace=ws, steps=[video_decoding, data_prep, hd_step, register_prednet])
     print ("Pipeline is built")
 
     pipeline.validate()
