@@ -47,7 +47,8 @@ def build_pipeline(dataset, ws, config):
     shutil.copy(os.path.join(base_dir, 'prednet.py'), script_folder)
     shutil.copy(os.path.join(base_dir, 'keras_utils.py'), script_folder)
     shutil.copy(os.path.join(base_dir, 'data_preparation.py'), script_folder)
-    shutil.copy(os.path.join(base_dir, 'model_registration.py'), script_folder)
+    shutil.copy(os.path.join(base_dir, 'register_prednet.py'), script_folder)
+    shutil.copy(os.path.join(base_dir, 'register_classification_model.py'), script_folder)
     shutil.copy(os.path.join(base_dir, 'config.json'), script_folder)
     
     cpu_compute_name = config['cpu_compute']
