@@ -205,8 +205,9 @@ def build_pipeline(dataset, ws, config):
     )
     hd_step.run_after(data_prep)
 
+
     register_prednet = PythonScriptStep(
-        name='register_model',
+        name='register_prednet',
         script_name='register_prednet.py',
         arguments=['--input_dir', data_metrics, '--output_dir', data_output],
         compute_target=cpu_compute_target,
@@ -218,10 +219,11 @@ def build_pipeline(dataset, ws, config):
     )
     register_prednet.run_after(hd_step)
 
+
     register_classification_model = PythonScriptStep(
-        name='register_model',
+        name='register_classification_model',
         script_name='register_classification_model.py',
-        arguments=[], ['--input_dir', data_metrics, '--output_dir', data_output],
+        arguments=[], # ['--input_dir', data_metrics, '--output_dir', data_output],
         compute_target=cpu_compute_target,
         # inputs=[data_metrics],
         # outputs=[data_output],
@@ -241,7 +243,7 @@ def build_pipeline(dataset, ws, config):
     published_pipeline = pipeline.publish(name=pipeline_name)
     
 
-    schedule = Schedule.create(workspace=ws, name=pipeline_name + "_sch",
+    _ = Schedule.create(workspace=ws, name=pipeline_name + "_sch",
                             pipeline_id=published_pipeline.id, 
                             experiment_name=pipeline_name,
                             datastore=def_blob_store,
