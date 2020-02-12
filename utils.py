@@ -52,7 +52,7 @@ def disable_pipeline(pipeline_name="", dry_run=True):
         if pub_pipeline.name.startswith('prednet') and pub_pipeline.name == pipeline_name or pipeline_name == "":
             print("Found pipeline:", pub_pipeline.name, pub_pipeline.id)
             pub_pipeline_id = pub_pipeline.id
-            schedules = Schedule.get_all(ws, pipeline_id=pub_pipeline_id)
+            schedules = Schedule.list(ws, pipeline_id=pub_pipeline_id)
 
             # We will iterate through the list of schedules and 
             # use the last ID in the list for further operations: 
