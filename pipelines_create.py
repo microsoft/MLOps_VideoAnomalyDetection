@@ -189,8 +189,8 @@ def build_pipeline(dataset, ws, config):
                             policy=policy, 
                             primary_metric_name='val_loss', 
                             primary_metric_goal=PrimaryMetricGoal.MINIMIZE, 
-                            max_total_runs=10,
-                            max_concurrent_runs=5, 
+                            max_total_runs=2,
+                            max_concurrent_runs=2, 
                             max_duration_minutes=60*6
                             )
 

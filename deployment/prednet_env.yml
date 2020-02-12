@@ -1,0 +1,14 @@
+name: prednet_environment
+dependencies:
+- python=3.6.2
+
+- pip:
+  - keras==2.0.8
+  - theano
+  - tensorflow==1.8.0
+  - matplotlib
+  - hickle
+  - pandas
+  - azureml-sdk==1.0.33.*
+  - scikit-learn
+  

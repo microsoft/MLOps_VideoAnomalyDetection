@@ -4,7 +4,7 @@
    "condaFile": "prednet_env.yml",
    "extraDockerfileSteps": null,
    "schemaFile": null,
-   "sourceDirectory": "./inference-scripts",
+   "sourceDirectory": "./",
    "enableGpu": false,
    "baseImage": null,
    "baseImageRegistry": null

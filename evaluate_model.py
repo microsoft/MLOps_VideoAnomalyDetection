@@ -75,7 +75,7 @@ cd = CondaDependencies.create(pip_packages=['keras==2.0.8', 'theano', 'tensorflo
 os.makedirs('aml_config', exist_ok=True)
 cd.save_to_file(base_directory='aml_config', conda_file_path='myenv.yml')
 
-img_config = ContainerImage.image_configuration(execution_script="score.py", 
+img_config = ContainerImage.image_configuration(execution_script="deployment/score.py", 
                                                runtime="python", 
                                                conda_file="aml_config/myenv.yml",
                                                dependencies=['prednet.py', 'keras_utils.py']) #, 'aml_config/model.json'])
