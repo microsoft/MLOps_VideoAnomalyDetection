@@ -221,10 +221,10 @@ def build_pipeline(dataset, ws, config):
     register_classification_model = PythonScriptStep(
         name='register_model',
         script_name='register_classification_model.py',
-        arguments=['--input_dir', data_metrics, '--output_dir', data_output],
+        arguments=[], ['--input_dir', data_metrics, '--output_dir', data_output],
         compute_target=cpu_compute_target,
-        inputs=[data_metrics],
-        outputs=[data_output],
+        # inputs=[data_metrics],
+        # outputs=[data_output],
         source_directory=script_folder,
         allow_reuse=True,
         hash_paths=['.']
