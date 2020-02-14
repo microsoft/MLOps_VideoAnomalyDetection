@@ -9,6 +9,6 @@ dependencies:
   - matplotlib
   - hickle
   - pandas
-  - azureml-sdk==1.0.33.*
+  - azureml-sdk
   - scikit-learn
   
