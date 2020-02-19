@@ -55,7 +55,7 @@ def run(raw_data):
     model_err[:, 0, :, :, :] = 0 # first frame doesn't count
     model_std = np.std((model_err)**2, axis=(2,3,4))  # look at all timesteps except the first
 
-    model_std = np.reshape(model_std, np.prod(model_std.shape))
+    model_std = np.reshape(model_std, (1, np.prod(model_std.shape)))
 
     is_anom = logistic_regression_model.predict(model_std).tolist()
 
