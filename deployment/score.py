@@ -16,7 +16,7 @@ def init():
 
     # logistic regression model for detecing anomalies based on model output
     model_path = Model.get_model_path("logistic_regression")
-    logistic_regression_model = joblib.log(model_path)
+    logistic_regression_model = joblib.load(model_path)
     
     model_root = Model.get_model_path('prednet_UCSDped1') #, _workspace=ws)
     # model_root = model_root.strip('model.json')
