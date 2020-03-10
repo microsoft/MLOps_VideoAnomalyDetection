@@ -2,7 +2,7 @@ FROM mcr.microsoft.com/azureml/base-gpu:intelmpi2018.3-cuda9.0-cudnn7-ubuntu16.0
 
 # Install Horovod, temporarily using CUDA stubsddd
 RUN ldconfig /usr/local/cuda/lib64/stubs && \
-    conda install -y python=3.6.2 && conda clean -ay && \
+    conda update -n base -c defaults conda && conda install -y python=3.6.2 && conda clean -ay && \
     # Install AzureML SDK
     pip install --no-cache-dir azureml-defaults && \
     # Install PyTorch
