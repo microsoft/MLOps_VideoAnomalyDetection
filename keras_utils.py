@@ -21,11 +21,7 @@ legacy_prednet_support = generate_legacy_interface(
 # Convert old Keras (1.2) json models and weights to Keras 2.0
 def convert_model_to_keras2(old_json_file, old_weights_file, new_json_file, new_weights_file):
     from prednet import PredNet
-    # If using tensorflow, it doesn't allow you to load the old weights.
-    if K.backend() != 'theano':
-        os.environ['KERAS_BACKEND'] = backend
-        reload(K)
-
+    
     f = open(old_json_file, 'r')
     json_string = f.read()
     f.close()

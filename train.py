@@ -5,15 +5,12 @@ This script can be run in isolation, but is really meant to be part of an aml pi
 
 '''
 
-
-print("loading standard modules")
 import os
 import numpy as np
 import argparse
 import json
 import matplotlib.pyplot as plt
 
-print("loading keras and tf modules")
 import keras
 from keras.layers import Input, Dense, Flatten
 from keras.layers import LSTM
@@ -23,11 +20,14 @@ from keras.optimizers import Adam
 import tensorflow as tf
 from keras.models import model_from_json
 
-print("loading custom modules")
 from prednet import PredNet
 from data_utils import SequenceGenerator
 
+import urllib.request
+
 print("defining str2bool")
+
+
 def str2bool(v):
     """
     convert string representation of a boolean into a boolean representation
@@ -41,7 +41,7 @@ def str2bool(v):
 
 print("defining args")
 parser = argparse.ArgumentParser(description='Process input arguments')
-parser.add_argument('--data-folder', default='./data/preprocessed/', type=str, dest='data_folder', help='data folder mounting point')
+parser.add_argument('--data-folder', default='./data/preprocessed/UCSDped1', type=str, dest='data_folder', help='data folder mounting point')
 parser.add_argument('--learning_rate', default=1e-3, help='learning rate', type=float, required=False)
 parser.add_argument('--lr_decay', default=1e-9, help='learning rate decay', type=float, required=False)
 parser.add_argument('--stack_sizes', dest="stack_sizes_arg", default="48, 96, 192", help='Stack sizes of hidden layers', type=str, required=False)
@@ -75,8 +75,6 @@ print('training dataset is stored here:', data_folder)
 # normally would expect data to be passed with a PipelineData object from the previous pipeline step.
 # This allows us to instead download the data 
 if "coursematerial" in data_folder:
-    import urllib.request
-
     data_folder = os.path.join(os.getcwd(), 'data')
     os.makedirs('data', exist_ok=True)
 
@@ -228,11 +226,11 @@ layer_loss_weights = np.array([layer_loss_weights_arg[0]] + [layer_loss_weights_
 layer_loss_weights = np.expand_dims(layer_loss_weights, 1)
 
 # Set up how much the error in each video frame in a sequence is taken into account
-time_loss_weights = 1./ (nt - 1) * np.ones((nt,1))  # equally weight all timesteps except the first (done in next line)
-time_loss_weights[0] = 0 # we obviously don't blame the model for not being able to predict the first video frame in a sequence
+time_loss_weights = 1. / (nt - 1) * np.ones((nt,1))  # equally weight all timesteps except the first (done in next line)
+time_loss_weights[0] = 0  # we obviously don't blame the model for not being able to predict the first video frame in a sequence
 
 # errors will be (batch_size, nt, nb_layers)
-errors = prednet(inputs)  
+errors = prednet(inputs)
 
 errors_by_time = TimeDistributed(Dense(1, trainable=False), weights=[layer_loss_weights, np.zeros(1)], trainable=False)(errors)  # calculate weighted error by layer
 errors_by_time = Flatten()(errors_by_time)  # will be (batch_size, nt)
@@ -287,8 +285,15 @@ train_generator = SequenceGenerator(train_file, train_sources, nt, batch_size=ba
 val_generator = SequenceGenerator(val_file, val_sources, nt, batch_size=batch_size, N_seq=N_seq_val)
 
 # train the model
-history = model.fit_generator(train_generator, samples_per_epoch / batch_size, nb_epoch, callbacks=callbacks,
-                validation_data=val_generator, validation_steps=N_seq_val / batch_size)
+# history = model.fit_generator(train_generator, samples_per_epoch / batch_size, nb_epoch, callbacks=callbacks,
+#                 validation_data=val_generator, validation_steps=N_seq_val / batch_size)
+history = model.fit(
+    x=train_generator,
+    steps_per_epoch=samples_per_epoch / batch_size,
+    epochs=nb_epoch,
+    callbacks=callbacks,
+    validation_data=val_generator,
+    validation_steps=N_seq_val / batch_size)
 
 if remote_execution:
     # after training is complete, we log the final loss on the validation set

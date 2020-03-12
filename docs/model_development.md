@@ -22,7 +22,7 @@ This involves the following steps:
 
 This part is pretty straightforward. Look for the definition of `n_channels, im_height, im_width` and adjust it to the size you chose during preprocessing of your video data.
 
-Be careful though, because there is one big constraint here. [Max-pooling](https://en.wikipedia.org/wiki/Convolutional_neural_network#Pooling_layer) with stride 2 is performed in each layer.  That means that the size of layers is divided by 2 each time. If you have a PredNet architecture of 4 (which is the default here), you have to make sure that the both dimensions of the image can be divided by 2 without a remainder for as many times as you have layers in your network.
+Be careful though, because there is one big constraint here. [Max-pooling](https://en.wikipedia.org/wiki/Convolutional_neural_network#Pooling_layer) with stride 2 is performed in each layer.  That means that the size of layers is divided by 2 each time. If you have a PredNet architecture of depth 4 (which is the default here), you have to make sure that the both dimensions of the image can be divided by 2 without a remainder for as many times as you have layers in your network.
 
 ### Sampling the input data
 

@@ -2,10 +2,18 @@ import numpy as np
 
 from keras import backend as K
 from keras import activations
-from keras.layers import Recurrent
-from keras.layers import Conv2D, UpSampling2D, MaxPooling2D
+# from keras.layers import 
+from keras.layers import (
+    Recurrent,
+    Conv2D,
+    UpSampling2D,
+    MaxPooling2D,
+    Dense,
+    Subtract,
+    Concatenate)
 from keras.engine import InputSpec
 from keras_utils import legacy_prednet_support
+
 
 class PredNet(Recurrent):
     '''PredNet architecture - Lotter 2016.
@@ -176,19 +184,17 @@ class PredNet(Recurrent):
                 initial_state = K.reshape(initial_state, output_shp)
                 initial_states += [initial_state]
 
-        if K._BACKEND == 'theano':
-            from theano import tensor as T
-            # There is a known issue in the Theano scan op when dealing with inputs whose shape is 1 along a dimension.
-            # In our case, this is a problem when training on grayscale images, and the below line fixes it.
-            initial_states = [T.unbroadcast(init_state, 0, 1) for init_state in initial_states]
-
         if self.extrap_start_time is not None:
             initial_states += [K.variable(0, int if K.backend() != 'tensorflow' else 'int32')]  # the last state will correspond to the current timestep
         return initial_states
 
     def build(self, input_shape):
         self.input_spec = [InputSpec(shape=input_shape)]
-        self.conv_layers = {c: [] for c in ['i', 'f', 'c', 'o', 'a', 'ahat']} # LSTM: (i)nput, (f)orget, (c)ell, (o) output; a, a_hat
+        self.conv_layers = {c: [] for c in ['i', 'f', 'c', 'o', 'a', 'ahat']}  # LSTM: (i)nput, (f)orget, (c)ell, (o) output; a, a_hat
+        # self.hidden_anomaly_layers = []
+        self.e_up_layers = []
+        self.e_down_layers = []
+        self.e_layers = []
 
         for l in range(self.nb_layers):
             for c in ['i', 'f', 'c', 'o']: 
@@ -219,10 +225,35 @@ class PredNet(Recurrent):
                         nb_channels += self.R_stack_sizes[l+1]
                 in_shape = (input_shape[0], nb_channels, nb_row // ds_factor, nb_col // ds_factor)
                 if self.data_format == 'channels_last': in_shape = (in_shape[0], in_shape[2], in_shape[3], in_shape[1])
+                if c == 'ahat':
+                    # print("layer: %d, shape: %s" % (l, in_shape))
+                    self.e_down_layers.append(Subtract())
+                    self.e_up_layers.append(Subtract())
+                    self.e_layers.append(Concatenate())
+                    with K.name_scope('layer_e_down_' + str(l)):
+                        self.e_down_layers[-1].build([in_shape, in_shape])
+                    with K.name_scope('layer_e_up_' + str(l)):
+                        self.e_up_layers[-1].build([in_shape, in_shape])
+                    with K.name_scope('layer_e_' + str(l)):
+                        self.e_layers[-1].build([in_shape, in_shape])
                 with K.name_scope('layer_' + c + '_' + str(l)):
                     self.conv_layers[c][l].build(in_shape)
                 self.trainable_weights += self.conv_layers[c][l].trainable_weights
 
+        # for l in range(self.nb_layers):
+        #     self.e_down_layers.append(
+        #         Subtract()(
+        #             [self.conv_layers['a'][l], self.conv_layers['ahat'][l]]))
+        #     self.e_up_layers.append(
+        #         Subtract()(
+        #             [self.conv_layers['ahat'][l], self.conv_layers['a'][l]]))
+        #     self.e_layers.append(
+        #         Concatenate()(
+        #             [self.e_up_layers[l], self.e_down_layers]))
+
+        # for l in self.nb_layers:
+        #     self.hidden_anomaly_layers.append(
+        #         Dense(50, activation=activations.relu)(self.conv_layers['e']))
         self.states = [None] * self.nb_layers*3
 
         if self.extrap_start_time is not None:
@@ -270,15 +301,19 @@ class PredNet(Recurrent):
         # Update feedforward path starting from the bottom
         for l in range(self.nb_layers):
             ahat = self.conv_layers['ahat'][l].call(r[l])
+            # print(ahat.shape)
             if l == 0:
                 ahat = K.minimum(ahat, self.pixel_max)
                 frame_prediction = ahat
 
             # compute errors
-            e_up = self.error_activation(ahat - a)
-            e_down = self.error_activation(a - ahat)
+            e_up = self.error_activation(self.e_up_layers[l].call([ahat, a]))
+            e_down = self.error_activation(self.e_down_layers[l].call([a, ahat]))
+            e.append(self.e_layers[l].call([e_up, e_down]))
+            # e_up = self.error_activation(ahat - a)
+            # e_down = self.error_activation(a - ahat)
 
-            e.append(K.concatenate((e_up, e_down), axis=self.channel_axis))
+            # e.append(K.concatenate((e_up, e_down), axis=self.channel_axis))
 
             if self.output_layer_num == l:
                 if self.output_layer_type == 'A':
@@ -294,6 +329,8 @@ class PredNet(Recurrent):
                 a = self.conv_layers['a'][l].call(e[l])
                 a = self.pool.call(a)  # target for next layer
 
+        # anomaly = self.anomaly_layer.call(e[0])
+
         if self.output_layer_type is None:
             if self.output_mode == 'prediction':
                 output = frame_prediction
@@ -305,6 +342,7 @@ class PredNet(Recurrent):
                     output = all_error
                 else:
                     output = K.concatenate((K.batch_flatten(frame_prediction), all_error), axis=-1)
+
 
         states = r + c + e
         if self.extrap_start_time is not None:

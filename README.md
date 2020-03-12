@@ -1,9 +1,9 @@
 # Video Anomaly Detection - powered by Azure MLOps
 [![Build Status](https://dev.azure.com/aidemos/MLOps/_apis/build/status/Microsoft.MLOps_VideoAnomalyDetection?branchName=master)](https://dev.azure.com/aidemos/MLOps/_build/latest?definitionId=88?branchName=master)
 
-The automation of detecting anomalous events in videos is a challenging problem that currently attracts a lot of attention by researchers, but also has broad applications across industry verticals.  
+The automation of detecting anomalous event sequences in videos is a challenging problem, but also has broad applications across industry verticals.  
 
-The approach involves training deep neural networks to develop an in-depth understanding of the physical and causal rules in the observed scenes. The model effectively learns to predict future frames in the video in a self-supervised fashion. 
+The approach followed in this repository involves self-supervised training deep neural networks to develop an in-depth understanding of the physical and causal rules in the observed scenes. The model effectively learns to predict future frames in the video in a self-supervised fashion. 
 
 By calculating the error in this prediction, it is then possible to detect if something unusual, an anomalous event, occurred, if there is a large prediction error.  
 
@@ -34,7 +34,7 @@ You will learn:
 
 ## Software Dependencies
 
-- Various python modules. We recommend working with a conda environement (see `environment.yml`) - [Documentation](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html)
+- Various python modules. We recommend working with a conda environement (see `environment.yml`) - [Documentation](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html).  You might have to install at least [Miniconda](https://docs.conda.io/en/latest/miniconda.html) first.
 - VS code [https://code.visualstudio.com/](https://code.visualstudio.com/)
 - X2Go [https://wiki.x2go.org/doku.php](https://wiki.x2go.org/doku.php)
 
@@ -47,8 +47,6 @@ A computer with a GPU, Standard NC6 sufficient, faster learning with NC6_v2/3 or
 ## Dataset
 
 [UCSD Anomaly Detection Dataset](http://www.svcl.ucsd.edu/projects/anomaly/dataset.htm)
-
-The dataset consists of individual files for video frames. Please use this [script](./tools/create_videos.sh) to create video files.
 
 ## Agenda
 

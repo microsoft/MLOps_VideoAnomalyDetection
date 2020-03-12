@@ -128,7 +128,7 @@ prev_p_75 = np.percentile((prev_err)**2, 75, axis=(2,3,4))
 prev_p_90 = np.percentile((prev_err)**2, 90, axis=(2,3,4))
 prev_p_95 = np.percentile((prev_err)**2, 95, axis=(2,3,4))
 prev_p_99 = np.percentile((prev_err)**2, 99, axis=(2,3,4))
-prev_std = np.std((prev_err)**2, axis=(2,3,4))
+prev_std = np.std((prev_err)**2, axis=(2, 3, 4))
 
 # now we flatten them so that they are all in one column later
 prev_mse = np.reshape(prev_mse, np.prod(prev_mse.shape))
@@ -142,7 +142,6 @@ prev_std = np.reshape(prev_std, np.prod(prev_mse.shape))
 # save the results to a dataframe
 df = pd.DataFrame({'model_mse': model_mse, 'model_p_50': model_p_50, 'model_p_75': model_p_75, 'model_p_90': model_p_90, 'model_p_95': model_p_95, 'model_p_99': model_p_99, 'model_std': model_std, 'prev_mse': prev_mse, 'prev_p_50': prev_p_50, 'prev_p_75': prev_p_75, 'prev_p_90': prev_p_90, 'prev_p_95': prev_p_95, 'prev_p_99': prev_p_99, 'prev_std': prev_std})
 df.to_pickle(os.path.join(save_path, 'test_results.pkl.gz'))
-
 
 
 # Create plots for illustation of model performance
