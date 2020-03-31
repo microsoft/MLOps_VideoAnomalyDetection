@@ -25,8 +25,8 @@ class SequenceGenerator(keras.utils.Sequence):
         assert sequence_start_mode in {'all', 'unique'}, \
             'sequence_start_mode must be in {all, unique}'
         self.sequence_start_mode = sequence_start_mode
-        assert output_mode in {'error', 'prediction', 'anomaly_detection'}, \
-            'output_mode must be in {error, prediction, anomaly_detection}'
+        assert output_mode in {'error', 'prediction'}, \
+            'output_mode must be in {error, prediction}'
         self.output_mode = output_mode
 
         if self.data_format == 'channels_first':
@@ -82,10 +82,6 @@ class SequenceGenerator(keras.utils.Sequence):
         if self.output_mode == 'error':
             # model outputs errors, so y should be zeros
             batch_y = np.zeros(self.batch_size, np.float32)
-        elif self.output_mode == 'anomaly_detection':
-            batch_y = np.zeros((self.batch_size, self.nt, 1), np.float32)
-            for i, idx in enumerate(index_array):
-                batch_y[i, :, 0] = self.y[idx:idx+self.nt]
         elif self.output_mode == 'prediction':
             # output actual pixels
             batch_y = batch_x

@@ -87,7 +87,6 @@ class PredNet(Recurrent):
         output_mode="error",
         extrap_start_time=None,
         data_format=K.image_data_format(),
-        n_hidden_anomaly_units=5,
         **kwargs
     ):
         self.stack_sizes = stack_sizes
@@ -123,13 +122,10 @@ class PredNet(Recurrent):
             LSTM_inner_activation
         )  # act func for f,i,o gates
 
-        self.n_hidden_anomaly_units = n_hidden_anomaly_units
-
         default_output_modes = [
             "prediction",
             "error",
             "all",
-            "anomaly_detection",
         ]
         layer_output_modes = [
             layer + str(n)
@@ -175,8 +171,6 @@ class PredNet(Recurrent):
             out_shape = (self.nb_layers,)
         elif self.output_mode == "all":
             out_shape = (np.prod(input_shape[2:]) + self.nb_layers,)
-        elif self.output_mode == "anomaly_detection":
-            out_shape = (1,)
         else:
             stack_str = (
                 "R_stack_sizes"
@@ -274,7 +268,6 @@ class PredNet(Recurrent):
         self.e_up_layers = []
         self.e_down_layers = []
         self.e_layers = []
-        self.hidden_anomaly_layers = []
 
         for l in range(self.nb_layers):
             for c in ["i", "f", "c", "o"]:
@@ -356,50 +349,18 @@ class PredNet(Recurrent):
                     self.e_down_layers.append(Subtract())
                     self.e_up_layers.append(Subtract())
                     self.e_layers.append(Concatenate())
-                    self.hidden_anomaly_layers.append(
-                        Dense(
-                            self.n_hidden_anomaly_units,
-                            activation=activations.relu,
-                            trainable=True,
-                        )
-                    )
                     with K.name_scope("layer_e_down_" + str(l)):
                         self.e_down_layers[-1].build([in_shape, in_shape])
                     with K.name_scope("layer_e_up_" + str(l)):
                         self.e_up_layers[-1].build([in_shape, in_shape])
                     with K.name_scope("layer_e_" + str(l)):
                         self.e_layers[-1].build([in_shape, in_shape])
-                    with K.name_scope("layer_hidden_anom_" + str(l)):
-                        hidden_shape = in_shape[:3] + tuple([in_shape[3] * 2])
-                        hidden_shape = (1, np.prod(hidden_shape[1:]))
-                        self.hidden_anomaly_layers[-1].build(hidden_shape)
                 with K.name_scope("layer_" + c + "_" + str(l)):
                     self.conv_layers[c][l].build(in_shape)
                 self.trainable_weights += self.conv_layers[c][
                     l
                 ].trainable_weights
 
-        self.anomaly_layer = Dense(
-            1, activation=activations.hard_sigmoid, trainable=True
-        )
-        with K.name_scope("anomaly_layer"):
-            self.anomaly_layer.build(
-                (1, self.n_hidden_anomaly_units * self.nb_layers)
-            )
-        # for l in range(self.nb_layers):
-        #     self.e_down_layers.append(
-        #         Subtract()(
-        #             [self.conv_layers['a'][l], self.conv_layers['ahat'][l]]))
-        #     self.e_up_layers.append(
-        #         Subtract()(
-        #             [self.conv_layers['ahat'][l], self.conv_layers['a'][l]]))
-        #     self.e_layers.append(
-        #         Concatenate()(
-        #             [self.e_up_layers[l], self.e_down_layers]))
-
-        # for l in self.nb_layers:
-        #     self.hidden_anomaly_layers.append(
-        #         Dense(50, activation=activations.relu)(self.conv_layers['e']))
         self.states = [None] * self.nb_layers * 3
 
         if self.extrap_start_time is not None:
@@ -430,7 +391,6 @@ class PredNet(Recurrent):
         c = []
         r = []
         e = []
-        h_anom = []
 
         # Update R units starting from the top
         for l in reversed(range(self.nb_layers)):
@@ -471,12 +431,6 @@ class PredNet(Recurrent):
                 self.e_down_layers[l].call([a, ahat])
             )
             e.append(self.e_layers[l].call([e_up, e_down]))
-            # e_up = self.error_activation(ahat - a)
-            # e_down = self.error_activation(a - ahat)
-
-            # e.append(K.concatenate((e_up, e_down), axis=self.channel_axis))
-            # print(e[l].shape)
-            h_anom.append(self.hidden_anomaly_layers[l].call(Flatten()(e[l])))
 
             if self.output_layer_num == l:
                 if self.output_layer_type == "A":
@@ -492,18 +446,9 @@ class PredNet(Recurrent):
                 a = self.conv_layers["a"][l].call(e[l])
                 a = self.pool.call(a)  # target for next layer
 
-        # anomaly = self.anomaly_layer.call(e[0])
-        h_anom_concat = K.concatenate(h_anom)
-        anomaly = self.anomaly_layer.call(h_anom_concat)
-
-        # if self.output_mode == 'anomaly_detection':
-        #     output = anomaly
-
         if self.output_layer_type is None:
             if self.output_mode == "prediction":
                 output = frame_prediction
-            elif self.output_mode == "anomaly_detection":
-                output = anomaly
             else:
                 for l in range(self.nb_layers):
                     layer_error = K.mean(

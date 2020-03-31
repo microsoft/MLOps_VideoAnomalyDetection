@@ -134,17 +134,9 @@ parser.add_argument(
 parser.add_argument(
     "--output_mode",
     dest="output_mode",
-    default="anomaly_detection",
-    help="which output_mode to use (prediction, error, anomaly_detection)",
+    default="error",
+    help="which output_mode to use (prediction, error)",
     type=str,
-    required=False,
-)
-parser.add_argument(
-    "--n_hidden_anomaly_units",
-    dest="n_hidden_anomaly_units",
-    default=5,
-    help="n_hidden_anomaly_units",
-    type=int,
     required=False,
 )
 
@@ -380,45 +372,34 @@ time_loss_weights = 1.0 / (nt - 1) * np.ones((nt, 1))
 time_loss_weights[0] = 0
 
 
-if output_mode == "error":
-    # Set up how much the error in each layer is taken into account during
-    # training
-    # weighting for each layer in final loss; "L_0" model:  [1, 0, 0, 0],
-    # "L_all": [1, 0.1, 0.1, 0.1]
-    layer_loss_weights = np.array(
-        [layer_loss_weights_arg[0]]
-        + [layer_loss_weights_arg[1]] * (nb_layers - 1)
-    )
-    layer_loss_weights = np.expand_dims(layer_loss_weights, 1)
+# Set up how much the error in each layer is taken into account during
+# training
+# weighting for each layer in final loss; "L_0" model:  [1, 0, 0, 0],
+# "L_all": [1, 0.1, 0.1, 0.1]
+layer_loss_weights = np.array(
+    [layer_loss_weights_arg[0]]
+    + [layer_loss_weights_arg[1]] * (nb_layers - 1)
+)
+layer_loss_weights = np.expand_dims(layer_loss_weights, 1)
 
-    # errors will be (batch_size, nt, nb_layers)
-    errors = prednet(inputs)
+# errors will be (batch_size, nt, nb_layers)
+errors = prednet(inputs)
 
-    errors_by_time = TimeDistributed(
-        Dense(1, trainable=False),
-        weights=[layer_loss_weights, np.zeros(1)],
-        trainable=False,
-    )(
-        errors
-    )  # calculate weighted error by layer
-    errors_by_time = Flatten()(errors_by_time)  # will be (batch_size, nt)
+errors_by_time = TimeDistributed(
+    Dense(1, trainable=False),
+    weights=[layer_loss_weights, np.zeros(1)],
+    trainable=False,
+)(
+    errors
+)  # calculate weighted error by layer
+errors_by_time = Flatten()(errors_by_time)  # will be (batch_size, nt)
 
-    final_errors = Dense(
-        1, weights=[time_loss_weights, np.zeros(1)], trainable=False
-    )(
-        errors_by_time
-    )  # weight errors by time
-    loss_type = "mean_absolute_error"
-
-elif output_mode == "anomaly_detection":
-    # Set up how much the error in each layer is taken into account during
-    # training
-    # weighting for each layer in final loss; "L_0" model:  [1, 0, 0, 0],
-    # "L_all": [1, 0.1, 0.1, 0.1]
-    # layer_loss_weights = np.ones(1)
-    # layer_loss_weights = np.expand_dims(layer_loss_weights, 1)
-    final_errors = prednet(inputs)
-    loss_type = "mean_absolute_error"
+final_errors = Dense(
+    1, weights=[time_loss_weights, np.zeros(1)], trainable=False
+)(
+    errors_by_time
+)  # weight errors by time
+loss_type = "mean_absolute_error"
 
 # define optimizer
 optimizer = Adam(lr=learning_rate, decay=lr_decay)
@@ -495,34 +476,14 @@ if len(freeze_layers) > 0:
                     )
                     raise
 
-if output_mode == "error":
-    # object for generating video sequences for training and validation
-    train_generator = SequenceGenerator(
-        X_train_file, train_sources, nt, batch_size=batch_size, shuffle=True
-    )
-    val_generator = SequenceGenerator(
-        X_val_file, val_sources, nt, batch_size=batch_size, N_seq=N_seq_val
-    )
-elif output_mode == "anomaly_detection":
-    # object for generating video sequences for training and validation
-    train_generator = SequenceGenerator(
-        X_test_file,
-        test_sources,
-        nt,
-        y_data_file=y_test_file,
-        batch_size=batch_size,
-        shuffle=True,
-        output_mode='anomaly_detection'
-    )
-    val_generator = SequenceGenerator(
-        X_val_file,
-        val_sources,
-        nt,
-        y_data_file=y_val_file,
-        batch_size=batch_size,
-        N_seq=N_seq_val,
-        output_mode='anomaly_detection'
-    )
+# object for generating video sequences for training and validation
+train_generator = SequenceGenerator(
+    X_train_file, train_sources, nt, batch_size=batch_size, shuffle=True
+)
+val_generator = SequenceGenerator(
+    X_val_file, val_sources, nt, batch_size=batch_size, N_seq=N_seq_val
+)
+
 
 # train the model
 history = model.fit(
