@@ -6,12 +6,16 @@ from keras import backend as K
 
 class SequenceGenerator(keras.utils.Sequence):
     'Generates data for Keras'
-    def __init__(self, data_file, source_file, nt,
+    def __init__(self, X_data_file, source_file, nt, y_data_file=None,
                  batch_size=8, shuffle=False, seed=None,
                  output_mode='error', sequence_start_mode='all', N_seq=None,
                  data_format=K.image_data_format()):
         # X will be like (n_images, nb_cols, nb_rows, nb_channels)
-        self.X = hkl.load(data_file)
+        self.X = hkl.load(X_data_file)
+        if y_data_file:
+            self.y = hkl.load(y_data_file)
+        else:
+            self.y = None
         # source for each image so when creating sequences can assure
         # that consecutive frames are from same video.
         self.sources = hkl.load(source_file)
@@ -21,8 +25,8 @@ class SequenceGenerator(keras.utils.Sequence):
         assert sequence_start_mode in {'all', 'unique'}, \
             'sequence_start_mode must be in {all, unique}'
         self.sequence_start_mode = sequence_start_mode
-        assert output_mode in {'error', 'prediction'}, \
-            'output_mode must be in {error, prediction}'
+        assert output_mode in {'error', 'prediction', 'anomaly_detection'}, \
+            'output_mode must be in {error, prediction, anomaly_detection}'
         self.output_mode = output_mode
 
         if self.data_format == 'channels_first':
@@ -42,6 +46,9 @@ class SequenceGenerator(keras.utils.Sequence):
             while curr_location < self.X.shape[0] - self.nt + 1:
                 curr_source = self.sources[curr_location]
                 curr_source_p_nt = self.sources[curr_location + self.nt - 1]
+                # if the next nt frames are from the same file, the curr_location can be used
+                # start of a sequence of nt length. Else, we increment by one, until we find 
+                # the next such position
                 if curr_source == curr_source_p_nt:
                     possible_starts.append(curr_location)
                     curr_location += self.nt
@@ -55,12 +62,12 @@ class SequenceGenerator(keras.utils.Sequence):
             # select a subset of sequences if want to
             self.possible_starts = self.possible_starts[:N_seq]
         self.N_sequences = len(self.possible_starts)
+        print("found %d possible starts in %s" % (len(self.possible_starts), X_data_file))
 
     def __len__(self):
         'Denotes the number of batches per epoch'
         # return int(np.floor(len(self.list_IDs) / self.batch_size))
         return self.batch_size
-
 
     def __getitem__(self, index):
         'Generate one batch of data'
@@ -71,9 +78,14 @@ class SequenceGenerator(keras.utils.Sequence):
         for i, idx in enumerate(index_array):
             # idx = self.possible_starts[idx]
             batch_x[i] = self.preprocess(self.X[idx:idx+self.nt])
+
         if self.output_mode == 'error':
             # model outputs errors, so y should be zeros
             batch_y = np.zeros(self.batch_size, np.float32)
+        elif self.output_mode == 'anomaly_detection':
+            batch_y = np.zeros((self.batch_size, self.nt, 1), np.float32)
+            for i, idx in enumerate(index_array):
+                batch_y[i, :, 0] = self.y[idx:idx+self.nt]
         elif self.output_mode == 'prediction':
             # output actual pixels
             batch_y = batch_x

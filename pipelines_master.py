@@ -11,40 +11,54 @@ from azureml.pipeline.steps import PythonScriptStep
 from azureml.core.compute import AmlCompute
 from azureml.core.runconfig import DEFAULT_GPU_IMAGE, DEFAULT_CPU_IMAGE
 from azureml.core.compute import ComputeTarget
+
 # from azureml.core.compute_target import ComputeTargetException
 from azureml.core.runconfig import CondaDependencies, RunConfiguration
-from azureml.train.hyperdrive import RandomParameterSampling, BanditPolicy, HyperDriveRunConfig, PrimaryMetricGoal
+from azureml.train.hyperdrive import (
+    RandomParameterSampling,
+    BanditPolicy,
+    HyperDriveRunConfig,
+    PrimaryMetricGoal,
+)
 from azureml.pipeline.steps import HyperDriveStep
 from azureml.train.hyperdrive import choice, loguniform
 from azureml.train.dnn import TensorFlow
 from azureml.core.authentication import ServicePrincipalAuthentication
-from utils import *
+
+# from utils import *
 import json
 
 
 from azureml.core import VERSION
+
 print("azureml.core.VERSION", VERSION)
 
-base_dir = '.'
+base_dir = "."
 
-config_json = os.path.join(base_dir, 'config.json')
-with open(config_json, 'r') as f:
+config_json = os.path.join(base_dir, "config.json")
+with open(config_json, "r") as f:
     config = json.load(f)
 
-try:
-    svc_pr = ServicePrincipalAuthentication(
-        tenant_id=config['tenant_id'],
-        service_principal_id=config['service_principal_id'],
-        service_principal_password=config['service_principal_password'])
-except KeyError as e:
-    print("Getting Service Principal Authentication from Azure Devops")
-    svc_pr = None
-    pass
+auth = ServicePrincipalAuthentication(
+    tenant_id=config["tenant_id"],
+    service_principal_id=config["service_principal_id"],
+    service_principal_password=config["service_principal_password"],
+)
 
-ws = Workspace.from_config(path=config_json, auth=svc_pr)
-    
+ws = Workspace.create(
+    config["workspace_name"],
+    location=config["workspace_region"],
+    resource_group=config["resource_group"],
+    subscription_id=config["subscription_id"],
+    auth=auth,
+    exist_ok=True
+)
+
+print(ws.get_details)
+
+
 # folder for scripts that need to be uploaded to Aml compute target
-script_folder = './scripts/'
+script_folder = "./scripts/"
 try:
     os.makedirs(script_folder)
 except BaseException as e:
@@ -52,24 +66,40 @@ except BaseException as e:
     shutil.rmtree(script_folder)
     os.makedirs(script_folder)
 
-cpu_compute_name = config['cpu_compute']
+cpu_compute_name = config["cpu_compute"]
 try:
-        cpu_compute_target = AmlCompute(ws, cpu_compute_name)
-        print("found existing compute target: %s" % cpu_compute_name)
-except: # ComputeTargetException:
+    cpu_compute_target = AmlCompute(ws, cpu_compute_name)
+    print("found existing compute target: %s" % cpu_compute_name)
+except Exception:  # ComputeTargetException:
     print("creating new compute target")
-    
-    provisioning_config = AmlCompute.provisioning_configuration(vm_size='STANDARD_D2_V2', 
-                                                                max_nodes=4,
-                                                                idle_seconds_before_scaledown=1800)    
-    cpu_compute_target = ComputeTarget.create(ws, cpu_compute_name, provisioning_config)
-    cpu_compute_target.wait_for_completion(show_output=True, min_node_count=None, timeout_in_minutes=20)
-    
-# use get_status() to get a detailed status for the current cluster. 
+
+    provisioning_config = AmlCompute.provisioning_configuration(
+        vm_size="STANDARD_D2_V2",
+        max_nodes=4,
+        idle_seconds_before_scaledown=1800,
+    )
+    cpu_compute_target = ComputeTarget.create(
+        ws, cpu_compute_name, provisioning_config
+    )
+    cpu_compute_target.wait_for_completion(
+        show_output=True, min_node_count=None, timeout_in_minutes=20
+    )
+
+# use get_status() to get a detailed status for the current cluster.
 print(cpu_compute_target.get_status().serialize())
 
 # conda dependencies for compute targets
-cpu_cd = CondaDependencies.create(pip_packages=["azure-storage-blob==2.1.0", "hickle==3.4.3", "requests==2.21.0", "sklearn", "pandas==0.24.2", "azureml-sdk", "numpy==1.16.2"])
+cpu_cd = CondaDependencies.create(
+    pip_packages=[
+        "azure-storage-blob==2.1.0",
+        "hickle==3.4.3",
+        "requests==2.21.0",
+        "sklearn",
+        "pandas==0.24.2",
+        "azureml-sdk",
+        "numpy==1.16.2",
+    ]
+)
 
 # Runconfigs
 cpu_compute_run_config = RunConfiguration(conda_dependencies=cpu_cd)
@@ -78,77 +108,87 @@ cpu_compute_run_config.environment.docker.gpu_support = False
 cpu_compute_run_config.environment.docker.base_image = DEFAULT_CPU_IMAGE
 cpu_compute_run_config.environment.spark.precache_packages = False
 
-shutil.copy(os.path.join(base_dir, 'pipelines_submit.py'), script_folder)
-shutil.copy(os.path.join(base_dir, 'pipelines_create.py'), script_folder)
-shutil.copy(os.path.join(base_dir, 'train.py'), script_folder)
-shutil.copy(os.path.join(base_dir, 'data_utils.py'), script_folder)
-shutil.copy(os.path.join(base_dir, 'prednet.py'), script_folder)
-shutil.copy(os.path.join(base_dir, 'keras_utils.py'), script_folder)
-shutil.copy(os.path.join(base_dir, 'video_decoding.py'), script_folder)
-shutil.copy(os.path.join(base_dir, 'data_preparation.py'), script_folder)
-shutil.copy(os.path.join(base_dir, 'register_prednet.py'), script_folder)
-shutil.copy(os.path.join(base_dir, 'register_classification_model.py'), script_folder)
-shutil.copy(os.path.join(base_dir, 'config.json'), script_folder)
+shutil.copy(os.path.join(base_dir, "pipelines_submit.py"), script_folder)
+shutil.copy(os.path.join(base_dir, "pipelines_create.py"), script_folder)
+shutil.copy(os.path.join(base_dir, "train.py"), script_folder)
+shutil.copy(os.path.join(base_dir, "data_utils.py"), script_folder)
+shutil.copy(os.path.join(base_dir, "prednet.py"), script_folder)
+shutil.copy(os.path.join(base_dir, "keras_utils.py"), script_folder)
+# shutil.copy(os.path.join(base_dir, 'video_decoding.py'), script_folder)
+shutil.copy(os.path.join(base_dir, "data_preparation.py"), script_folder)
+shutil.copy(os.path.join(base_dir, "register_prednet.py"), script_folder)
+shutil.copy(
+    os.path.join(base_dir, "register_classification_model.py"), script_folder
+)
+shutil.copy(os.path.join(base_dir, "config.json"), script_folder)
 
-os.makedirs(os.path.join(script_folder, 'models/logistic_regression'))
-shutil.copy(os.path.join(base_dir, 'models/logistic_regression/model.pkl'), os.path.join(script_folder, 'models/logistic_regression/'))
+os.makedirs(os.path.join(script_folder, "models/logistic_regression"))
+shutil.copy(
+    os.path.join(base_dir, "models/logistic_regression/model.pkl"),
+    os.path.join(script_folder, "models/logistic_regression/"),
+)
 
-    
+
 hash_paths = os.listdir(script_folder)
 
 create_pipelines = PythonScriptStep(
-    name='create pipelines',
-    script_name="pipelines_create.py", 
-    compute_target=cpu_compute_target, 
+    name="create pipelines",
+    script_name="pipelines_create.py",
+    compute_target=cpu_compute_target,
     source_directory=script_folder,
     runconfig=cpu_compute_run_config,
     allow_reuse=False,
-    hash_paths=["."]
 )
 print("pipeline building step created")
 
 
 # step 2, submit pipelines
 submit_pipelines = PythonScriptStep(
-    name='submit pipelines',
-    script_name="pipelines_submit.py", 
-    # arguments=["--overwrite_published_pipelines", overwrite_published_pipelines],
-    compute_target=cpu_compute_target, 
+    name="submit pipelines",
+    script_name="pipelines_submit.py",
+    compute_target=cpu_compute_target,
     source_directory=script_folder,
     runconfig=cpu_compute_run_config,
     allow_reuse=False,
-    hash_paths=["."]
 )
 print("pipeline submit step created")
 
 submit_pipelines.run_after(create_pipelines)
 
 pipeline = Pipeline(workspace=ws, steps=[create_pipelines, submit_pipelines])
-print ("Pipeline created")
+print("Pipeline created")
 
 pipeline.validate()
-print("Validation complete") 
+print("Validation complete")
 
-pipeline_name = 'prednet_master'
+pipeline_name = "prednet_master"
 published_pipeline = pipeline.publish(name=pipeline_name)
 print("pipeline id: ", published_pipeline.id)
 
 datastore = ws.get_default_datastore()
 
-with open('placeholder.txt', 'w') as f:
-    f.write('This is just a placeholder to ensure that this path exists in the blobstore.\n')
+with open("placeholder.txt", "w") as f:
+    f.write(
+        "This is just a placeholder to ensure "
+        "that this path exists in the blobstore.\n"
+    )
 
-datastore.upload_files([os.path.join(os.getcwd(), 'placeholder.txt')], target_path='prednet/data/video/')
+datastore.upload_files(
+    [os.path.join(os.getcwd(), "placeholder.txt")],
+    target_path="prednet/data/proprocessed/",
+)
 
-schedule = Schedule.create(workspace=ws, name=pipeline_name + "_sch",
-                           pipeline_id=published_pipeline.id, 
-                           experiment_name='prednet_master',
-                           datastore=datastore,
-                           wait_for_provisioning=True,
-                           description="Datastore scheduler for Pipeline" + pipeline_name,
-                           path_on_datastore='prednet/data/video',
-                           polling_interval=1
-                           )
+schedule = Schedule.create(
+    workspace=ws,
+    name=pipeline_name + "_sch",
+    pipeline_id=published_pipeline.id,
+    experiment_name="prednet_master",
+    datastore=datastore,
+    wait_for_provisioning=True,
+    description="Datastore scheduler for Pipeline" + pipeline_name,
+    path_on_datastore="prednet/data/preprocessed",
+    polling_interval=1,
+)
 
 print("Created schedule with id: {}".format(schedule.id))
 
