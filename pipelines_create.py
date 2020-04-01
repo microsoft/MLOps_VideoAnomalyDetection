@@ -1,20 +1,19 @@
 import os
 import json
-import azureml
 import shutil
-import socket
-from azureml.core import Workspace, Run, Experiment, Datastore
+
+from utils import disable_pipeline
+
+from azureml.core import Workspace, Run, Experiment, Datastore, Environment
 from azureml.data.data_reference import DataReference
 from azureml.pipeline.core import Pipeline, PipelineData
 from azureml.pipeline.steps import PythonScriptStep
 from azureml.core.compute import AmlCompute
 from azureml.core.compute import ComputeTarget
 
-# from azureml.core.compute_target import ComputeTargetException
 from azureml.core.runconfig import CondaDependencies, RunConfiguration
 from azureml.train.hyperdrive import (
     BayesianParameterSampling,
-    BanditPolicy,
     HyperDriveConfig,
     PrimaryMetricGoal,
 )
@@ -22,18 +21,16 @@ from azureml.pipeline.steps import HyperDriveStep
 from azureml.pipeline.core import PublishedPipeline
 from azureml.train.hyperdrive import choice, uniform
 
-# from azureml.train.dnn import TensorFlow
 from azureml.train.estimator import Estimator
 from azure.storage.blob import BlockBlobService
 from azureml.core.runconfig import DEFAULT_GPU_IMAGE, DEFAULT_CPU_IMAGE
 from azureml.core.authentication import ServicePrincipalAuthentication
-from azureml.core import ScriptRunConfig
-from azureml.core.container_registry import ContainerRegistry
+# from azureml.core import ScriptRunConfig
+# from azureml.core.container_registry import ContainerRegistry
 from azureml.pipeline.core.schedule import ScheduleRecurrence, Schedule
 from azureml.core.environment import Environment
 
 from azureml.core import VERSION
-
 print("azureml.core.VERSION", VERSION)
 
 
@@ -48,47 +45,50 @@ def build_pipeline(dataset, ws, config):
 
     # folder for scripts that need to be uploaded to Aml compute target
     script_folder = "./scripts"
-    os.makedirs(script_folder, exist_ok=True)
+    os.makedirs(script_folder)
 
     # shutil.copy(os.path.join(base_dir, 'video_decoding.py'), script_folder)
-    shutil.copy(os.path.join(base_dir, "pipelines_submit.py"), script_folder)
-    shutil.copy(os.path.join(base_dir, "pipelines_create.py"), script_folder)
+    # shutil.copy(os.path.join(base_dir, "pipelines_submit.py"), script_folder)
+    # shutil.copy(os.path.join(base_dir, "pipelines_create.py"), script_folder)
+    # shutil.copy(os.path.join(base_dir, "data_utils.py"), script_folder)
+    # shutil.copy(os.path.join(base_dir, "prednet.py"), script_folder)
+    shutil.copytree(
+        os.path.join(base_dir, "models"),
+        os.path.join(base_dir, script_folder, "models"))
+    # shutil.copy(os.path.join(base_dir, "keras_utils.py"), script_folder)
     shutil.copy(os.path.join(base_dir, "train.py"), script_folder)
-    shutil.copy(os.path.join(base_dir, "data_utils.py"), script_folder)
-    shutil.copy(os.path.join(base_dir, "prednet.py"), script_folder)
-    shutil.copy(os.path.join(base_dir, "keras_utils.py"), script_folder)
     shutil.copy(os.path.join(base_dir, "data_preparation.py"), script_folder)
     shutil.copy(os.path.join(base_dir, "register_prednet.py"), script_folder)
     shutil.copy(
         os.path.join(base_dir, "register_classification_model.py"),
         script_folder,
     )
-    shutil.copy(os.path.join(base_dir, "config.json"), script_folder)
+    # shutil.copy(os.path.join(base_dir, "config.json"), script_folder)
 
-    os.makedirs(os.path.join(script_folder, "models/logistic_regression"))
-    shutil.copy(
-        os.path.join(base_dir, "models/logistic_regression/model.pkl"),
-        os.path.join(script_folder, "models/logistic_regression/"),
-    )
+    # os.makedirs(os.path.join(script_folder, "models/logistic_regression"))
+    # shutil.copy(
+    #     os.path.join(base_dir, "models/logistic_regression/model.pkl"),
+    #     os.path.join(script_folder, "models/logistic_regression/"),
+    # )
 
     cpu_compute_name = config["cpu_compute"]
-    try:
-        cpu_compute_target = AmlCompute(ws, cpu_compute_name)
-        print("found existing compute target: %s" % cpu_compute_name)
-    except Exception as e:  # ComputeTargetException:
-        print("creating new compute target")
+    # try:
+    cpu_compute_target = AmlCompute(ws, cpu_compute_name)
+    print("found existing compute target: %s" % cpu_compute_name)
+    # except Exception as e:  # ComputeTargetException:
+    #     print("creating new compute target")
 
-        provisioning_config = AmlCompute.provisioning_configuration(
-            vm_size="STANDARD_D2_V2",
-            max_nodes=4,
-            idle_seconds_before_scaledown=1800,
-        )
-        cpu_compute_target = ComputeTarget.create(
-            ws, cpu_compute_name, provisioning_config
-        )
-        cpu_compute_target.wait_for_completion(
-            show_output=True, min_node_count=None, timeout_in_minutes=20
-        )
+    #     provisioning_config = AmlCompute.provisioning_configuration(
+    #         vm_size="STANDARD_D2_V2",
+    #         max_nodes=4,
+    #         idle_seconds_before_scaledown=1800,
+    #     )
+    #     cpu_compute_target = ComputeTarget.create(
+    #         ws, cpu_compute_name, provisioning_config
+    #     )
+    #     cpu_compute_target.wait_for_completion(
+    #         show_output=True, min_node_count=None, timeout_in_minutes=20
+    #     )
 
     # use get_status() to get a detailed status for the current cluster.
     print(cpu_compute_target.get_status().serialize())
@@ -96,77 +96,47 @@ def build_pipeline(dataset, ws, config):
     # choose a name for your cluster
     gpu_compute_name = config["gpu_compute"]
 
-    try:
-        gpu_compute_target = AmlCompute(workspace=ws, name=gpu_compute_name)
-        print("found existing compute target: %s" % gpu_compute_name)
-    except Exception as e:
-        print("Creating a new compute target...")
-        provisioning_config = AmlCompute.provisioning_configuration(
-            vm_size="STANDARD_NC6",
-            max_nodes=10,
-            idle_seconds_before_scaledown=1800,
-        )
+    # try:
+    gpu_compute_target = AmlCompute(workspace=ws, name=gpu_compute_name)
+    #     print("found existing compute target: %s" % gpu_compute_name)
+    # except Exception as e:
+    #     print("Creating a new compute target...")
+    #     provisioning_config = AmlCompute.provisioning_configuration(
+    #         vm_size="STANDARD_NC6",
+    #         max_nodes=10,
+    #         idle_seconds_before_scaledown=1800,
+    #     )
 
-        # create the cluster
-        gpu_compute_target = ComputeTarget.create(
-            ws, gpu_compute_name, provisioning_config
-        )
+    #     # create the cluster
+    #     gpu_compute_target = ComputeTarget.create(
+    #         ws, gpu_compute_name, provisioning_config
+    #     )
 
-        # can poll for a minimum number of nodes and for a specific timeout.
-        # if no min node count is provided it uses the scale settings for the
-        # cluster
-        gpu_compute_target.wait_for_completion(
-            show_output=True, min_node_count=None, timeout_in_minutes=20
-        )
+    #     # can poll for a minimum number of nodes and for a specific timeout.
+    #     # if no min node count is provided it uses the scale settings for the
+    #     # cluster
+    #     gpu_compute_target.wait_for_completion(
+    #         show_output=True, min_node_count=None, timeout_in_minutes=20
+    #     )
 
     # use get_status() to get a detailed status for the current cluster.
-    try:
-        print(gpu_compute_target.get_status().serialize())
-    except BaseException as e:
-        print("Could not get status of compute target.")
-        print(e)
+    # try:
+    print(gpu_compute_target.get_status().serialize())
+    # except BaseException as e:
+    #     print("Could not get status of compute target.")
+    #     print(e)
 
-    # conda dependencies for compute targets
-    cpu_cd = CondaDependencies.create(
-        conda_packages=["py-opencv=3.4.2"],
-        pip_packages=[
-            "azure-storage-blob==2.1.0",
-            "hickle==3.4.3",
-            "requests==2.21.0",
-            "sklearn",
-            "pandas==0.24.2",
-            "azureml-sdk",
-            "numpy==1.16.2",
-            "pillow==6.0.0",
-        ],
-    )
-
-    gpu_cd = CondaDependencies.create(
-        conda_packages=["python=3.6", "cudatoolkit=10.1", "pip"],
-        pip_packages=[
-            "tensorflow-gpu==1.15",
-            "keras",
-            "hickle",
-            "matplotlib",
-            "seaborn",
-            "requests",
-            "sklearn",
-            "pandas",
-            "azureml-sdk",
-            "numpy",
-            "pylint",  # optional
-            "pillow",
-            "azure-storage-blob==2.1.0",
-        ],
-    )
+    env = Environment.get(ws, "prednet")
+    # conda_dependencies = env.python.conda_dependencies
 
     # Runconfigs
-    cpu_compute_run_config = RunConfiguration(conda_dependencies=cpu_cd)
-    cpu_compute_run_config.environment.docker.enabled = True
-    cpu_compute_run_config.environment.docker.gpu_support = False
-    cpu_compute_run_config.environment.docker.base_image = DEFAULT_CPU_IMAGE
-    cpu_compute_run_config.environment.spark.precache_packages = False
-
+    runconfig = RunConfiguration(
+        conda_dependencies=env.python.conda_dependencies)
+    runconfig.environment.docker.enabled = True
+    runconfig.environment.docker.gpu_support = False
+    runconfig.environment.docker.base_image = DEFAULT_CPU_IMAGE
+    runconfig.environment.spark.precache_packages = False
+    # runconfig.environment = env
     print("PipelineData object created")
 
     # DataReference to where raw data is stored.
@@ -186,21 +156,6 @@ def build_pipeline(dataset, ws, config):
     data_metrics = PipelineData("data_metrics", datastore=def_blob_store)
     data_output = PipelineData("output_data", datastore=def_blob_store)
 
-    # # prepare dataset for training/testing prednet
-    # video_decoding = PythonScriptStep(
-    #     name='decode_videos',
-    #     script_name="video_decoding.py",
-    #     arguments=["--input_data", video_data, "--output_data", raw_data],
-    #     inputs=[video_data],
-    #     outputs=[raw_data],
-    #     compute_target=cpu_compute_target,
-    #     source_directory=script_folder,
-    #     runconfig=cpu_compute_run_config,
-    #     allow_reuse=True,
-    #     hash_paths=['.']
-    # )
-    # print("video_decode step created")
-
     # prepare dataset for training/testing recurrent neural network
     data_prep = PythonScriptStep(
         name="prepare_data",
@@ -215,31 +170,22 @@ def build_pipeline(dataset, ws, config):
         outputs=[preprocessed_data],
         compute_target=cpu_compute_target,
         source_directory=script_folder,
-        runconfig=cpu_compute_run_config,
+        runconfig=runconfig,
         allow_reuse=True,
     )
     # data_prep.run_after(video_decoding)
 
     print("data_prep step created")
 
-    # configure access to ACR for pulling our custom docker image
-    acr = ContainerRegistry()
-    acr.address = config["acr_address"]
-    acr.username = config["acr_username"]
-    acr.password = config["acr_password"]
-
-    
     est = Estimator(
         source_directory=script_folder,
         compute_target=gpu_compute_target,
         entry_script="train.py",
-        use_gpu=True,
+        # use_gpu=True,
         node_count=1,
-        conda_packages=gpu_cd.conda_packages,
-        pip_packages=gpu_cd.pip_packages,
-        # custom_docker_image="wopauli_1.8-gpu:1",
-        # image_registry_details=acr,
-        # user_managed=True,
+        # conda_packages=gpu_cd.conda_packages,
+        # pip_packages=gpu_cd.pip_packages,
+        environment_definition=env,
     )
 
     ps = BayesianParameterSampling(
@@ -248,20 +194,15 @@ def build_pipeline(dataset, ws, config):
             "--filter_sizes": choice("3, 3, 3", "4, 4, 4", "5, 5, 5"),
             "--stack_sizes": choice(
                 "48, 96, 192", "36, 72, 144", "12, 24, 48"
-            ),  # , "48, 96"),
+            ),
             "--learning_rate": uniform(1e-6, 1e-3),
             "--lr_decay": uniform(1e-9, 1e-2),
-            # "--freeze_layers": choice(
-            #     "0, 1, 2", "1, 2, 3", "0, 1", "1, 2", "2, 3", "0", "3"
-            # ),
-            # "--transfer_learning": choice("True", "False"),
-            "--n_hidden_anomaly_units": choice(1, 2, 3),
+            "--freeze_layers": choice(
+                "0, 1, 2", "1, 2, 3", "0, 1", "1, 2", "2, 3", "0", "3"
+            ),
+            "--transfer_learning": choice("True", "False"),
         }
     )
-
-    # policy = BanditPolicy(
-    #     evaluation_interval=2, slack_factor=0.1, delay_evaluation=10
-    # )
 
     hdc = HyperDriveConfig(
         estimator=est,
@@ -307,8 +248,6 @@ def build_pipeline(dataset, ws, config):
         script_name="register_classification_model.py",
         arguments=[],
         compute_target=cpu_compute_target,
-        # inputs=[data_metrics],
-        # outputs=[data_output],
         source_directory=script_folder,
         allow_reuse=True,
     )
@@ -345,7 +284,9 @@ def build_pipeline(dataset, ws, config):
         polling_interval=60 * 24,
     )
 
-    return pipeline_name
+    published_pipeline.submit(ws, pipeline_name)
+
+    # return pipeline_name
 
 
 # start of script (main)

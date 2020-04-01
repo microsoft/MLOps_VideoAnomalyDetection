@@ -25,8 +25,8 @@ from keras.optimizers import Adam
 import tensorflow as tf
 from keras.models import model_from_json
 
-from prednet import PredNet
-from data_utils import SequenceGenerator
+from models.prednet.prednet import PredNet
+from models.prednet.data_utils import SequenceGenerator
 
 import urllib.request
 
@@ -220,9 +220,9 @@ n_channels, im_height, im_width = (3, 152, 232)
 
 # settings for sampling the video data
 nt = 10  # number of timesteps used for sequences in training
-samples_per_epoch = 3000
+samples_per_epoch = 75
 nb_epoch = 150
-N_seq_val = 150  # number of sequences to use for validation
+N_seq_val = 15  # number of sequences to use for validation
 
 # settings for training and optimization
 optimizer_type = "adam"

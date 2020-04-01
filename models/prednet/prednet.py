@@ -15,7 +15,8 @@ from keras.layers import (
     Flatten,
 )
 from keras.engine import InputSpec
-from keras_utils import legacy_prednet_support
+# from keras_utils import legacy_prednet_support
+
 
 
 class PredNet(Recurrent):
@@ -71,7 +72,7 @@ class PredNet(Recurrent):
         - [Predictive coding in the visual cortex: a functional interpretation of some extra-classical receptive-field effects](http://www.nature.com/neuro/journal/v2/n1/pdf/nn0199_79.pdf)
     """
 
-    @legacy_prednet_support
+    # @legacy_prednet_support
     def __init__(
         self,
         stack_sizes,
