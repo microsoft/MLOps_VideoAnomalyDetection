@@ -3,7 +3,6 @@
 # This script can be run in isolation, but is really meant to be part of
 # an aml pipeline.
 
-
 import os
 import numpy as np
 import argparse
@@ -48,12 +47,19 @@ def str2bool(v):
 print("defining args")
 parser = argparse.ArgumentParser(description="Process input arguments")
 parser.add_argument(
-    "--data-folder",
-    default="./data/preprocessed/UCSDped1",
+    "--preprocessed_data",
+    default="./data/preprocessed/",
     type=str,
-    dest="data_folder",
+    dest="preprocessed_data",
     help="data folder mounting point",
 )
+# parser.add_argument(
+#     "--hd_child_cwd",
+#     default="./prednet_path",
+#     type=str,
+#     dest="hd_child_cwd",
+#     help="data where model is stored",
+# )
 parser.add_argument(
     "--learning_rate",
     default=1e-3,
@@ -150,7 +156,9 @@ layer_loss_weights_arg = tuple(
 )
 filter_sizes = tuple(map(int, args.filter_sizes.split(",")))
 remote_execution = args.remote_execution
-data_folder = args.data_folder
+preprocessed_data = os.path.join(
+    args.preprocessed_data,
+    args.dataset)
 batch_size = args.batch_size
 transfer_learning = str2bool(args.transfer_learning)
 if len(args.freeze_layers) > 0 and transfer_learning:
@@ -160,35 +168,35 @@ else:
 dataset = args.dataset
 output_mode = args.output_mode
 
-print("training dataset is stored here:", data_folder)
+print("training dataset is stored here:", preprocessed_data)
 
 # normally would expect data to be passed with a PipelineData object from
 # the previous pipeline step. This allows us to instead download the data
-if "coursematerial" in data_folder:
-    data_folder = os.path.join(os.getcwd(), "data")
+if "coursematerial" in preprocessed_data:
+    preprocessed_data = os.path.join(os.getcwd(), "data")
     os.makedirs("data", exist_ok=True)
 
     urllib.request.urlretrieve(
-        os.path.join(args.data_folder, "X_train.hkl"),
-        filename=os.path.join(data_folder, "X_train.hkl"),
+        os.path.join(args.preprocessed_data, "X_train.hkl"),
+        filename=os.path.join(preprocessed_data, "X_train.hkl"),
     )
     urllib.request.urlretrieve(
-        os.path.join(args.data_folder, "X_val.hkl"),
-        filename=os.path.join(data_folder, "X_val.hkl"),
+        os.path.join(args.preprocessed_data, "X_val.hkl"),
+        filename=os.path.join(preprocessed_data, "X_val.hkl"),
     )
     urllib.request.urlretrieve(
-        os.path.join(args.data_folder, "sources_train.hkl"),
-        filename=os.path.join(data_folder, "sources_train.hkl"),
+        os.path.join(args.preprocessed_data, "sources_train.hkl"),
+        filename=os.path.join(preprocessed_data, "sources_train.hkl"),
     )
     urllib.request.urlretrieve(
-        os.path.join(args.data_folder, "sources_val.hkl"),
-        filename=os.path.join(data_folder, "sources_val.hkl"),
+        os.path.join(args.preprocessed_data, "sources_val.hkl"),
+        filename=os.path.join(preprocessed_data, "sources_val.hkl"),
     )
 
 # create a ./outputs folder in the compute target
 # files saved in the "./outputs" folder are automatically uploaded into
 # run history
-output_dir = "outputs"
+output_dir = 'outputs'
 os.makedirs(output_dir, exist_ok=True)
 
 # initiate logging if we are running remotely
@@ -207,7 +215,8 @@ if remote_execution:
     run.log("stack_sizes", args.stack_sizes_arg)
     run.log("layer_loss_weights_arg", args.layer_loss_weights_arg)
     run.log("filter_sizes", args.filter_sizes)
-    run.log("data_folder", data_folder)
+    run.log("preprocessed_data", args.preprocessed_data)
+    run.log("dataset", args.dataset)
     run.log("batch_size", batch_size)
     run.log("freeze_layers", args.freeze_layers)
     run.log("transfer_learning", args.transfer_learning)
@@ -221,7 +230,7 @@ n_channels, im_height, im_width = (3, 152, 232)
 # settings for sampling the video data
 nt = 10  # number of timesteps used for sequences in training
 samples_per_epoch = 75
-nb_epoch = 150
+nb_epoch = 1  # 150
 N_seq_val = 15  # number of sequences to use for validation
 
 # settings for training and optimization
@@ -236,14 +245,14 @@ weights_file = os.path.join(output_dir, "weights.hdf5")
 json_file = os.path.join(output_dir, "model.json")
 
 # Load data and source files
-X_train_file = os.path.join(data_folder, "X_train.hkl")
-train_sources = os.path.join(data_folder, "sources_train.hkl")
-X_val_file = os.path.join(data_folder, "X_val.hkl")
-y_val_file = os.path.join(data_folder, "y_val.hkl")
-val_sources = os.path.join(data_folder, "sources_val.hkl")
-X_test_file = os.path.join(data_folder, "X_test.hkl")
-y_test_file = os.path.join(data_folder, "y_test.hkl")
-test_sources = os.path.join(data_folder, "sources_test.hkl")
+X_train_file = os.path.join(preprocessed_data, "X_train.hkl")
+train_sources = os.path.join(preprocessed_data, "sources_train.hkl")
+X_val_file = os.path.join(preprocessed_data, "X_val.hkl")
+y_val_file = os.path.join(preprocessed_data, "y_val.hkl")
+val_sources = os.path.join(preprocessed_data, "sources_val.hkl")
+X_test_file = os.path.join(preprocessed_data, "X_test.hkl")
+y_test_file = os.path.join(preprocessed_data, "y_test.hkl")
+test_sources = os.path.join(preprocessed_data, "sources_test.hkl")
 
 if transfer_learning:
     print("Performing transfer learning.")
@@ -309,8 +318,8 @@ if transfer_learning:
 #     trained_model.load_weights(os.path.join(model_root, "weights.hdf5"))
 
 #     # retrieve configuration of prednet.
-#     # all prednet layers are weirdly stored in the second layer of the overall
-#     # trained_model
+#     # all prednet layers are weirdly stored in the second layer of the 
+#     # overall trained_model
 #     layer_config = trained_model.layers[1].get_config()
 
 #     # set output_mode to error, just to be safe
@@ -404,11 +413,18 @@ loss_type = "mean_absolute_error"
 # define optimizer
 optimizer = Adam(lr=learning_rate, decay=lr_decay)
 
+import glob
+files = glob.glob(os.path.join(model_root, "*"))
+print(files)
+
 # put it all together
 model = keras.models.Model(inputs=inputs, outputs=final_errors)
 model.compile(loss=loss_type, optimizer=optimizer)
 if transfer_learning:
-    model.load_weights(os.path.join(model_root, "weights.hdf5"), by_name=True, skip_mismatch=True)
+    model.load_weights(
+        os.path.join(model_root, "weights.hdf5"),
+        by_name=True,
+        skip_mismatch=True)
 
 # add early stopping
 callbacks = [

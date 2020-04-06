@@ -34,9 +34,9 @@ Depending on your use-case, you could also log the activation of one of the deep
 
 ### Run
 
-Next, we then load the model architecture (`model.json`) and weights (`weights.jdf5`) to apply it to the test dataset (`X_test.jkl` and `sources_test.hkl`).
+Next, we load the model architecture (`model.json`) and weights (`weights.hdf5`) to apply it to the test dataset (`X_test.hkl` and `sources_test.hkl`).
 
-For each video frame, we log the prediction of the model this frame pixel by pixel. Building up an array that is exactly of the same format as preprocessed video data (n_images, height, width, depth).  This way we can easily perform stats on the difference between the actual video frames (ground truth) and the model's predictions.
+For each video frame, we log the prediction of the model for each frame pixel by pixel. Building up an array that is exactly of the same format as preprocessed video data (n_images, height, width, depth).  This way we can easily perform stats on the difference between the actual video frames (ground truth) and the model's predictions.
 
 ### Post-processing
 

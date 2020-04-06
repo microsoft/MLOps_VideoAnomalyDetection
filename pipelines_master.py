@@ -1,37 +1,25 @@
-import os
-import azureml
-import shutil
-import socket
-from azure.storage.blob import BlockBlobService
-from azureml.core import Workspace, Run, Experiment, Datastore, Environment
-from azureml.pipeline.core.schedule import ScheduleRecurrence, Schedule
-from azureml.data.data_reference import DataReference
-from azureml.pipeline.core import Pipeline, PipelineData
-from azureml.pipeline.steps import PythonScriptStep
-from azureml.core.compute import AmlCompute
-from azureml.core.runconfig import DEFAULT_GPU_IMAGE, DEFAULT_CPU_IMAGE
-from azureml.core.compute import ComputeTarget
-
-# from azureml.core.compute_target import ComputeTargetException
-from azureml.core.runconfig import CondaDependencies, RunConfiguration
-from azureml.train.hyperdrive import (
-    RandomParameterSampling,
-    BanditPolicy,
-    HyperDriveRunConfig,
-    PrimaryMetricGoal,
-)
-from azureml.pipeline.steps import HyperDriveStep
-from azureml.train.hyperdrive import choice, loguniform
-from azureml.train.dnn import TensorFlow
-from azureml.core.authentication import ServicePrincipalAuthentication
-
-# from utils import *
 import json
-
+import os
+import shutil
 from utils import disable_pipeline
 
-from azureml.core import VERSION
+from azure.storage.blob import BlockBlobService
 
+from azureml.core import Workspace, Run, Experiment, Datastore, Environment
+from azureml.core.authentication import ServicePrincipalAuthentication
+from azureml.core.compute import AmlCompute, ComputeTarget
+from azureml.core.runconfig import (
+    DEFAULT_GPU_IMAGE,
+    DEFAULT_CPU_IMAGE,
+    CondaDependencies,
+    RunConfiguration
+)
+from azureml.data.data_reference import DataReference
+from azureml.pipeline.core import Pipeline, PipelineData
+from azureml.pipeline.steps import PythonScriptStep, HyperDriveStep
+from azureml.pipeline.core.schedule import ScheduleRecurrence, Schedule
+
+from azureml.core import VERSION
 print("azureml.core.VERSION", VERSION)
 
 base_dir = "."
@@ -57,7 +45,6 @@ ws = Workspace.create(
 
 print(ws.get_details)
 
-
 # folder for scripts that need to be uploaded to Aml compute target
 script_folder = "./scripts/"
 if os.path.exists(script_folder):
@@ -65,21 +52,17 @@ if os.path.exists(script_folder):
     shutil.rmtree(script_folder)
 os.makedirs(script_folder)
 
-
 shutil.copy(os.path.join(base_dir, "utils.py"), script_folder)
-# shutil.copy(os.path.join(base_dir, "pipelines_submit.py"), script_folder)
 shutil.copy(os.path.join(base_dir, "pipelines_create.py"), script_folder)
 shutil.copy(os.path.join(base_dir, "train.py"), script_folder)
 shutil.copytree(
     os.path.join(base_dir, "models"),
     os.path.join(base_dir, script_folder, "models"))
-# shutil.copy(os.path.join(model_dir, "prednet.py"), script_folder)
-# shutil.copy(os.path.join(base_dir, "keras_utils.py"), script_folder)
 shutil.copy(os.path.join(base_dir, "data_preparation.py"), script_folder)
 shutil.copy(os.path.join(base_dir, "register_prednet.py"), script_folder)
-shutil.copy(
-    os.path.join(base_dir, "register_classification_model.py"), script_folder
-)
+shutil.copy(os.path.join(base_dir, "batch_scoring.py"), script_folder)
+shutil.copy(os.path.join(base_dir, "train_clf.py"), script_folder)
+shutil.copy(os.path.join(base_dir, "register_clf.py"), script_folder)
 shutil.copy(os.path.join(base_dir, "config.json"), script_folder)
 
 cpu_compute_name = config["cpu_compute"]
@@ -138,7 +121,6 @@ conda_dependencies = CondaDependencies.create(
     pip_packages=[
         "azure-storage-blob==2.1.0",
         "azureml-sdk",
-        # "azureml-defaults==1.1.5",
         "hickle==3.4.3",
         "requests==2.21.0",
         "sklearn",
@@ -158,13 +140,13 @@ env.docker.enabled = True
 env.register(ws)
 
 # Runconfigs
-runconfig = RunConfiguration(conda_dependencies=env.python.conda_dependencies)
-# runconfig.environment = env
-# conda_dependencies=env.python.conda_dependencies)
-runconfig.environment.docker.enabled = True
-runconfig.environment.docker.gpu_support = False
-runconfig.environment.docker.base_image = DEFAULT_CPU_IMAGE
-runconfig.environment.spark.precache_packages = False
+runconfig = RunConfiguration()
+runconfig.environment = env
+print("PipelineData object created")
+# runconfig.environment.docker.enabled = True
+# runconfig.environment.docker.gpu_support = False
+# runconfig.environment.docker.base_image = DEFAULT_CPU_IMAGE
+# runconfig.environment.spark.precache_packages = False
 
 
 create_pipelines = PythonScriptStep(
@@ -177,20 +159,6 @@ create_pipelines = PythonScriptStep(
 )
 print("pipeline building step created")
 
-
-# step 2, submit pipelines
-# submit_pipelines = PythonScriptStep(
-#     name="submit pipelines",
-#     script_name="pipelines_submit.py",
-#     compute_target=cpu_compute_target,
-#     source_directory=script_folder,
-#     runconfig=runconfig,
-#     allow_reuse=False,
-# )
-# print("pipeline submit step created")
-
-# submit_pipelines.run_after(create_pipelines)
-
 pipeline = Pipeline(workspace=ws, steps=[create_pipelines])
 print("Pipeline created")
 
@@ -199,6 +167,7 @@ print("Validation complete")
 
 pipeline_name = "prednet_master"
 disable_pipeline(pipeline_name=pipeline_name, dry_run=False)
+disable_pipeline(pipeline_name="prednet_UCSDped1", dry_run=False)
 published_pipeline = pipeline.publish(name=pipeline_name)
 
 print("pipeline id: ", published_pipeline.id)

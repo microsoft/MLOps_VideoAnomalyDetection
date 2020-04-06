@@ -5,8 +5,9 @@ from azureml.core import Workspace, Run, Experiment
 from azureml.core.authentication import ServicePrincipalAuthentication
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--input_dir', dest="input_dir", default = "output")
-parser.add_argument('--output_dir', dest="output_dir", default = "output")
+parser.add_argument('--data_metrics', dest="data_metrics", default="data_metrics")
+# parser.add_argument('--hd_child_cwd', dest="hd_child_cwd", default="output")
+parser.add_argument('--prednet_path', dest="prednet_path", default="prednet_path")
 
 args = parser.parse_args()
 print("all args: ", args)
@@ -23,12 +24,12 @@ except KeyError as e:
     print("Getting Service Principal Authentication from Azure Devops")
     svr_pr = None
     pass
-    
+
 ws = Workspace.from_config(auth=svc_pr)
 
-input_dir = os.path.dirname(args.input_dir)
+data_metrics = os.path.dirname(args.data_metrics)
 
-with open(os.path.join(input_dir, 'data_metrics')) as f:
+with open(os.path.join(data_metrics, 'data_metrics')) as f:
     metrics = json.load(f)
 
 best_loss = 1.0
@@ -57,14 +58,16 @@ experiment_name = run_details['runDefinition']['environment']['name'].split()[1]
 exp = Experiment(ws, name=experiment_name)
 best_run = Run(exp, best_run_id)
 
+output_dir = './'  # 'outputs'
+
 # register the model
 if best_run_id:
     tags = {}
     tags['run_id'] = best_run_id
     tags['val_loss'] = metrics[best_run_id]['val_loss'][-1]
-    model = best_run.register_model(model_name=experiment_name, 
-                                    model_path='outputs',
+    model = best_run.register_model(model_name=experiment_name,
+                                    model_path=output_dir,
                                     tags=tags)
-
+    model.download(target_dir=args.prednet_path)
 else:
     raise Exception("Couldn't not find a model to register.  Probably because no run completed")
