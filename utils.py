@@ -1,20 +1,12 @@
-from azureml.core import Experiment, Workspace
-from azureml.core import get_run
-import sys
-import os
-from azureml.core.authentication import ServicePrincipalAuthentication
-import json
-from azureml.core import Workspace
-from azureml.pipeline.core import PublishedPipeline
-from azureml.core import Workspace, Run, Experiment, Datastore
-from azureml.core.authentication import ServicePrincipalAuthentication
-from azureml.pipeline.core.schedule import ScheduleRecurrence, Schedule
-import sys
-import json
 import argparse
 
 
 def get_workspace():
+    import os
+    import json
+    from azureml.core.authentication import ServicePrincipalAuthentication
+    from azureml.core import Workspace
+
     base_dir = "."
 
     config_json = os.path.join(base_dir, "config.json")
@@ -38,6 +30,8 @@ def get_workspace():
 
 
 def disable_pipeline(pipeline_name="", dry_run=True):
+    from azureml.pipeline.core import PublishedPipeline
+    from azureml.pipeline.core.schedule import Schedule
 
     if dry_run:
         print("Dry run: only printing what would be done")
@@ -99,6 +93,7 @@ def disable_pipeline(pipeline_name="", dry_run=True):
 
 
 def upload_data(folder='UCSDped1'):
+    import os
 
     ws = get_workspace()
 
@@ -114,9 +109,6 @@ def upload_data(folder='UCSDped1'):
 
 def delete_data_from_blob(prefix):
     from azure.storage.blob.blockblobservice import BlockBlobService
-    from azureml.core.authentication import ServicePrincipalAuthentication
-    from azureml.core import Workspace
-    import json
 
     ws = get_workspace()
 
@@ -144,6 +136,8 @@ def delete_data_from_blob(prefix):
 
 
 def cancel_all_runs(exp_name, run_id=None):
+    from azureml.core import Experiment
+    from azureml.core import get_run
 
     ws = get_workspace()
 
@@ -180,12 +174,7 @@ def cancel_all_runs(exp_name, run_id=None):
 
 
 def delete_models(model_names=[]):
-    import os
-    import json
-    from azureml.core import Workspace, Run, Experiment
     from azureml.core.model import Model
-    from azureml.core.authentication import ServicePrincipalAuthentication
-    from azureml.exceptions._azureml_exception import ModelNotFoundException
 
     ws = get_workspace()
 

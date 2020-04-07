@@ -3,21 +3,16 @@ import os
 import shutil
 from utils import disable_pipeline
 
-from azure.storage.blob import BlockBlobService
-
-from azureml.core import Workspace, Run, Experiment, Datastore, Environment
+from azureml.core import Workspace, Environment
 from azureml.core.authentication import ServicePrincipalAuthentication
 from azureml.core.compute import AmlCompute, ComputeTarget
 from azureml.core.runconfig import (
-    DEFAULT_GPU_IMAGE,
-    DEFAULT_CPU_IMAGE,
     CondaDependencies,
     RunConfiguration
 )
-from azureml.data.data_reference import DataReference
-from azureml.pipeline.core import Pipeline, PipelineData
-from azureml.pipeline.steps import PythonScriptStep, HyperDriveStep
-from azureml.pipeline.core.schedule import ScheduleRecurrence, Schedule
+from azureml.pipeline.core import Pipeline
+from azureml.pipeline.steps import PythonScriptStep
+from azureml.pipeline.core.schedule import Schedule
 
 from azureml.core import VERSION
 print("azureml.core.VERSION", VERSION)
@@ -90,7 +85,7 @@ gpu_compute_name = config["gpu_compute"]
 try:
     gpu_compute_target = AmlCompute(workspace=ws, name=gpu_compute_name)
     print("found existing compute target: %s" % gpu_compute_name)
-except Exception as e:
+except Exception:
     print("Creating a new compute target...")
     provisioning_config = AmlCompute.provisioning_configuration(
         vm_size="STANDARD_NC6",

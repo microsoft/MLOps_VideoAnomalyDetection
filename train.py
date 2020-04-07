@@ -11,18 +11,14 @@ import matplotlib.pyplot as plt
 
 import keras
 from keras.layers import Input, Dense, Flatten
-from keras.layers import LSTM
 from keras.layers import TimeDistributed
 from keras.callbacks import (
-    LearningRateScheduler,
     ModelCheckpoint,
     EarlyStopping,
     CSVLogger,
     Callback,
 )
 from keras.optimizers import Adam
-import tensorflow as tf
-from keras.models import model_from_json
 
 from models.prednet.prednet import PredNet
 from models.prednet.data_utils import SequenceGenerator
@@ -271,7 +267,7 @@ if transfer_learning:
             service_principal_id=config["service_principal_id"],
             service_principal_password=config["service_principal_password"],
         )
-    except KeyError as e:
+    except KeyError:
         print("Getting Service Principal Authentication from Azure Devops")
         svr_pr = None
         pass
@@ -281,7 +277,7 @@ if transfer_learning:
     try:
         model_root = Model.get_model_path("prednet_" + dataset, _workspace=ws)
         print("model_root:", model_root)
-    except ModelNotFoundException as e:
+    except ModelNotFoundException:
         print(
             "Didn't find model for this data set (%s). \
             Looking for model for UCSDped1 (where it all started), \
@@ -318,7 +314,7 @@ if transfer_learning:
 #     trained_model.load_weights(os.path.join(model_root, "weights.hdf5"))
 
 #     # retrieve configuration of prednet.
-#     # all prednet layers are weirdly stored in the second layer of the 
+#     # all prednet layers are weirdly stored in the second layer of the
 #     # overall trained_model
 #     layer_config = trained_model.layers[1].get_config()
 
@@ -413,16 +409,12 @@ loss_type = "mean_absolute_error"
 # define optimizer
 optimizer = Adam(lr=learning_rate, decay=lr_decay)
 
-import glob
-files = glob.glob(os.path.join(model_root, "*"))
-print(files)
-
 # put it all together
 model = keras.models.Model(inputs=inputs, outputs=final_errors)
 model.compile(loss=loss_type, optimizer=optimizer)
 if transfer_learning:
     model.load_weights(
-        os.path.join(model_root, "weights.hdf5"),
+        os.path.join(model_root, "outputs", "weights.hdf5"),
         by_name=True,
         skip_mismatch=True)
 
@@ -481,7 +473,7 @@ if len(freeze_layers) > 0:
         ]:  # iterate over layers at each depth
             try:
                 model.layers[1].conv_layers[c][freeze_layer].trainable = False
-            except IndexError as e:
+            except IndexError:
                 if c == "a":  # deepest layer doesn't have an A layer
                     pass
                 else:

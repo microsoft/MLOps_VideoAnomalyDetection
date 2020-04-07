@@ -14,7 +14,6 @@ import glob
 from sklearn.model_selection import train_test_split
 from PIL import Image
 import argparse
-from azureml.core import Workspace, Run, Experiment, Datastore
 
 
 def main():
@@ -54,13 +53,6 @@ def main():
         type=str,
         required=False,
     )
-
-    run = Run.get_context()
-    try:
-        ws = run.experiment.workspace
-    except AttributeError:
-        ws = Workspace.from_config()
-    ds = ws.get_default_datastore()
 
     test_size = 0.5
     # process input arguments
@@ -189,19 +181,23 @@ def main():
                     last_frame = int(anom.pop(0)) + row * args.n_frames
                     anoms[first_frame:last_frame] = 1
 
-                    hkl.dump(anoms, os.path.join(preprocessed_data_path, "y_" + split + ".hkl"))
+                    hkl.dump(
+                        anoms,
+                        os.path.join(
+                            preprocessed_data_path,
+                            "y_" + split + ".hkl"))
 
         # save all the data one split in one giant archive
-        hkl.dump(X, os.path.join(preprocessed_data_path, "X_" + split + ".hkl"))
         hkl.dump(
-            source_list, os.path.join(preprocessed_data_path, "sources_" + split + ".hkl")
-        )
-        # src_dir = os.path.join(preprocessed_data)
-        # target_path = os.path.join("prednet/data/preprocessed", dataset)
-        # ds.upload(
-        #     src_dir=src_dir,
-        #     target_path=target_path,
-        # )
+            X,
+            os.path.join(
+                preprocessed_data_path,
+                "X_" + split + ".hkl"))
+        hkl.dump(
+            source_list,
+            os.path.join(
+                preprocessed_data_path,
+                "sources_" + split + ".hkl"))
 
 
 def process_im(im, desired_im_sz):

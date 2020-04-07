@@ -5,9 +5,14 @@ from azureml.core import Workspace, Run, Experiment
 from azureml.core.authentication import ServicePrincipalAuthentication
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_metrics', dest="data_metrics", default="data_metrics")
-# parser.add_argument('--hd_child_cwd', dest="hd_child_cwd", default="output")
-parser.add_argument('--prednet_path', dest="prednet_path", default="prednet_path")
+parser.add_argument(
+    '--data_metrics',
+    dest="data_metrics",
+    default="data_metrics")
+parser.add_argument(
+    '--prednet_path',
+    dest="prednet_path",
+    default="prednet_path")
 
 args = parser.parse_args()
 print("all args: ", args)
@@ -20,7 +25,7 @@ try:
         tenant_id=config['tenant_id'],
         service_principal_id=config['service_principal_id'],
         service_principal_password=config['service_principal_password'])
-except KeyError as e:
+except KeyError:
     print("Getting Service Principal Authentication from Azure Devops")
     svr_pr = None
     pass
@@ -42,7 +47,7 @@ for run in metrics.keys():
         if loss < best_loss:
             best_loss = loss
             best_run_id = run
-    except Exception as e:
+    except Exception:
         print("WARNING: Could get val_los for run_id", run)
         pass
 
@@ -53,7 +58,8 @@ print("best run", best_run_id, best_loss)
 run = Run.get_context()
 run_details = run.get_details()
 
-experiment_name = run_details['runDefinition']['environment']['name'].split()[1]
+environment_definition = run_details['runDefinition']['environment']
+experiment_name = environment_definition['name'].split()[1]
 
 exp = Experiment(ws, name=experiment_name)
 best_run = Run(exp, best_run_id)
@@ -70,4 +76,5 @@ if best_run_id:
                                     tags=tags)
     model.download(target_dir=args.prednet_path)
 else:
-    raise Exception("Couldn't not find a model to register.  Probably because no run completed")
+    raise Exception("Couldn't not find a model to register."
+                    "Probably because no run completed")

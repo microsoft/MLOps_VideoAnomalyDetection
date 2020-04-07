@@ -2,14 +2,13 @@ import os
 import json
 import shutil
 
-from azureml.core import Workspace, Run, Experiment, Datastore, Environment
-from azureml.core.compute import AmlCompute, ComputeTarget
-from azureml.core.runconfig import CondaDependencies, RunConfiguration
-from azureml.core.runconfig import DEFAULT_GPU_IMAGE, DEFAULT_CPU_IMAGE
+from azureml.core import Workspace, Environment
+from azureml.core.compute import AmlCompute
+from azureml.core.runconfig import RunConfiguration
 from azureml.core.authentication import ServicePrincipalAuthentication
 from azureml.data.data_reference import DataReference
 from azureml.pipeline.core import Pipeline, PipelineData, PublishedPipeline
-from azureml.pipeline.core.schedule import ScheduleRecurrence, Schedule
+from azureml.pipeline.core.schedule import Schedule
 from azureml.pipeline.steps import PythonScriptStep, HyperDriveStep
 from azureml.train.hyperdrive import (
     BayesianParameterSampling,
@@ -133,7 +132,7 @@ def build_prednet_pipeline(dataset, ws, config):
             "--freeze_layers": choice(
                 "0, 1, 2", "1, 2, 3", "0, 1", "1, 2", "2, 3", "0", "3"
             ),
-            # "--transfer_learning": choice("True", "False"),
+            "--transfer_learning": choice("True", "False"),
         }
     )
 
@@ -283,7 +282,7 @@ try:
         service_principal_id=config["service_principal_id"],
         service_principal_password=config["service_principal_password"],
     )
-except KeyError as e:
+except KeyError:
     print("Getting Service Principal Authentication from Azure Devops")
     svc_pr = None
     pass
