@@ -48,13 +48,6 @@ parser.add_argument(
     dest="preprocessed_data",
     help="data folder mounting point",
 )
-# parser.add_argument(
-#     "--hd_child_cwd",
-#     default="./prednet_path",
-#     type=str,
-#     dest="hd_child_cwd",
-#     help="data where model is stored",
-# )
 parser.add_argument(
     "--learning_rate",
     default=1e-3,
@@ -117,10 +110,10 @@ parser.add_argument(
     required=False,
 )
 parser.add_argument(
-    "--transfer_learning",
-    dest="transfer_learning",
+    "--fine_tuning",
+    dest="fine_tuning",
     default="True",
-    help="use the benchmark model and perform transfer learning",
+    help="use the benchmark model and perform fine tuning",
     type=str,
     required=False,
 )
@@ -155,8 +148,8 @@ preprocessed_data = os.path.join(
     args.preprocessed_data,
     args.dataset)
 batch_size = args.batch_size
-transfer_learning = str2bool(args.transfer_learning)
-if len(args.freeze_layers) > 0 and transfer_learning:
+fine_tuning = str2bool(args.fine_tuning)
+if len(args.freeze_layers) > 0 and fine_tuning:
     freeze_layers = tuple(map(int, args.freeze_layers.split(",")))
 else:
     freeze_layers = []
@@ -214,7 +207,7 @@ if remote_execution:
     run.log("dataset", args.dataset)
     run.log("batch_size", batch_size)
     run.log("freeze_layers", args.freeze_layers)
-    run.log("transfer_learning", args.transfer_learning)
+    run.log("fine_tuning", args.fine_tuning)
 
 # model parameters
 A_filt_size, Ahat_filt_size, R_filt_size = filter_sizes
@@ -249,7 +242,7 @@ X_test_file = os.path.join(preprocessed_data, "X_test.hkl")
 y_test_file = os.path.join(preprocessed_data, "y_test.hkl")
 test_sources = os.path.join(preprocessed_data, "sources_test.hkl")
 
-if transfer_learning:
+if fine_tuning:
     print("Performing transfer learning.")
     from azureml.core import Workspace
     from azureml.core.authentication import ServicePrincipalAuthentication
@@ -292,9 +285,9 @@ if transfer_learning:
                 "learning!"
             )
             print(e)
-            transfer_learning = False
+            fine_tuning = False
 
-# if transfer_learning:
+# if fine_tuning:
 #     # load model from json file
 #     # todo, this is going to the real one
 #     json_file = open(os.path.join(model_root, "model.json"), "r")
@@ -410,7 +403,7 @@ optimizer = Adam(lr=learning_rate, decay=lr_decay)
 # put it all together
 model = keras.models.Model(inputs=inputs, outputs=final_errors)
 model.compile(loss=loss_type, optimizer=optimizer)
-if transfer_learning:
+if fine_tuning:
     model.load_weights(
         os.path.join(model_root, "outputs", "weights.hdf5"),
         by_name=True,

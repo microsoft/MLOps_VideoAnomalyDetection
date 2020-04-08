@@ -16,7 +16,7 @@ The webservice *returns* the mean squared error of the model's predictions of ea
 
 ## Create scoring script
 
-We have created a scoring script for you: `score.py`.  Let's take a look at what it does.  
+We have created a scoring script for you: `deployment/score.py`.  Let's take a look at what it does.  
 
 The scoring script is the script that is run when the webservice is deployed and also everytime data is sent to the webservice for processing.
 

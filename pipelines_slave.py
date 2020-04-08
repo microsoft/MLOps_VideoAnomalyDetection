@@ -131,7 +131,7 @@ def build_prednet_pipeline(dataset, ws):
             "--freeze_layers": choice(
                 "0, 1, 2", "1, 2, 3", "0, 1", "1, 2", "2, 3", "0", "3"
             ),
-            "--transfer_learning": choice("True", "False"),
+            "--fine_tuning": choice("True", "False"),
         }
     )
 

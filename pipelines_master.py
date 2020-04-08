@@ -55,7 +55,7 @@ if os.path.exists(script_folder):
 os.makedirs(script_folder)
 
 shutil.copy(os.path.join(base_dir, "utils.py"), script_folder)
-shutil.copy(os.path.join(base_dir, "pipelines_create.py"), script_folder)
+shutil.copy(os.path.join(base_dir, "pipelines_slave.py"), script_folder)
 shutil.copy(os.path.join(base_dir, "train.py"), script_folder)
 shutil.copytree(
     os.path.join(base_dir, "models"),
@@ -144,15 +144,11 @@ env.register(ws)
 runconfig = RunConfiguration()
 runconfig.environment = env
 print("PipelineData object created")
-# runconfig.environment.docker.enabled = True
-# runconfig.environment.docker.gpu_support = False
-# runconfig.environment.docker.base_image = DEFAULT_CPU_IMAGE
-# runconfig.environment.spark.precache_packages = False
 
 
 create_pipelines = PythonScriptStep(
     name="create pipelines",
-    script_name="pipelines_create.py",
+    script_name="pipelines_slave.py",
     compute_target=cpu_compute_target,
     arguments=[
         "--cpu_compute_name",
