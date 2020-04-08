@@ -17,20 +17,11 @@ parser.add_argument(
 args = parser.parse_args()
 print("all args: ", args)
 
-with open('config.json', 'r') as f:
-    config = json.load(f)
-
+run = Run.get_context()
 try:
-    svc_pr = ServicePrincipalAuthentication(
-        tenant_id=config['tenant_id'],
-        service_principal_id=config['service_principal_id'],
-        service_principal_password=config['service_principal_password'])
-except KeyError:
-    print("Getting Service Principal Authentication from Azure Devops")
-    svr_pr = None
-    pass
-
-ws = Workspace.from_config(auth=svc_pr)
+    ws = run.experiment.workspace
+except AttributeError:
+    ws = Workspace.from_config()
 
 data_metrics = os.path.dirname(args.data_metrics)
 

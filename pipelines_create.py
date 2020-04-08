@@ -1,8 +1,8 @@
 import os
-import json
 import shutil
+import argparse
 
-from azureml.core import Workspace, Environment
+from azureml.core import Workspace, Environment, Run
 from azureml.core.compute import AmlCompute
 from azureml.core.runconfig import RunConfiguration
 from azureml.core.authentication import ServicePrincipalAuthentication
@@ -24,7 +24,7 @@ from azureml.core import VERSION
 print("azureml.core.VERSION", VERSION)
 
 
-def build_prednet_pipeline(dataset, ws, config):
+def build_prednet_pipeline(dataset, ws):
     print(
         "building pipeline for dataset %s in workspace %s" % (dataset, ws.name)
     )
@@ -46,9 +46,8 @@ def build_prednet_pipeline(dataset, ws, config):
     shutil.copy(os.path.join(base_dir, "batch_scoring.py"), script_folder)
     shutil.copy(os.path.join(base_dir, "train_clf.py"), script_folder)
     shutil.copy(os.path.join(base_dir, "register_clf.py"), script_folder)
-    shutil.copy(os.path.join(base_dir, 'config.json'), script_folder)
 
-    cpu_compute_name = config["cpu_compute"]
+    cpu_compute_name = args.cpu_compute_name
     cpu_compute_target = AmlCompute(ws, cpu_compute_name)
     print("found existing compute target: %s" % cpu_compute_name)
 
@@ -56,7 +55,7 @@ def build_prednet_pipeline(dataset, ws, config):
     print(cpu_compute_target.get_status().serialize())
 
     # choose a name for your cluster
-    gpu_compute_name = config["gpu_compute"]
+    gpu_compute_name = args.gpu_compute_name
 
     gpu_compute_target = AmlCompute(workspace=ws, name=gpu_compute_name)
     print(gpu_compute_target.get_status().serialize())
@@ -272,23 +271,39 @@ def build_prednet_pipeline(dataset, ws, config):
     published_pipeline.submit(ws, pipeline_name)
 
 
-config_json = "config.json"
-with open(config_json, "r") as f:
-    config = json.load(f)
+parser = argparse.ArgumentParser(description="Process input arguments")
+parser.add_argument(
+    "--cpu_compute_name",
+    default="cpu-cluster",
+    type=str,
+    dest="cpu_compute_name",
+    help="name of cpu cluster",
+)
+parser.add_argument(
+    "--gpu_compute_name",
+    default="gpu-cluster",
+    type=str,
+    dest="gpu_compute_name",
+    help="name of gpu cluster",
+)
 
-try:
-    svc_pr = ServicePrincipalAuthentication(
-        tenant_id=config["tenant_id"],
-        service_principal_id=config["service_principal_id"],
-        service_principal_password=config["service_principal_password"],
-    )
-except KeyError:
-    print("Getting Service Principal Authentication from Azure Devops")
-    svc_pr = None
-    pass
+args = parser.parse_args()
 
-ws = Workspace.from_config(path=config_json, auth=svc_pr)
+run = Run.get_context()
+ws = run.experiment.workspace
 
+keyvault = ws.get_default_keyvault()
+tenant_id = keyvault.get_secret('tenantId')
+service_principal_id = keyvault.get_secret("servicePrincipalId")
+service_principal_password = keyvault.get_secret("servicePrincipalPassword")
+
+svc_pr = ServicePrincipalAuthentication(
+    tenant_id=tenant_id,
+    service_principal_id=service_principal_id,
+    service_principal_password=service_principal_password,
+)
+
+ws = Workspace(ws.subscription_id, ws.resource_group, ws.name, auth=svc_pr)
 print(ws.name, ws.resource_group, ws.location, ws.subscription_id, sep="\n")
 
 def_blob_store = ws.get_default_datastore()
@@ -330,4 +345,4 @@ for dataset in datasets:
 
 for dataset in new_datasets:
     print("Creating pipeline for dataset", dataset)
-    build_prednet_pipeline(dataset, ws, config)
+    build_prednet_pipeline(dataset, ws)

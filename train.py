@@ -6,7 +6,6 @@
 import os
 import numpy as np
 import argparse
-import json
 import matplotlib.pyplot as plt
 
 import keras
@@ -257,22 +256,21 @@ if transfer_learning:
     from azureml.core.model import Model
     from azureml.exceptions._azureml_exception import ModelNotFoundException
 
-    config_json = "config.json"
-    with open(config_json, "r") as f:
-        config = json.load(f)
+    run = Run.get_context()
+    ws = run.experiment.workspace
 
-    try:
-        svc_pr = ServicePrincipalAuthentication(
-            tenant_id=config["tenant_id"],
-            service_principal_id=config["service_principal_id"],
-            service_principal_password=config["service_principal_password"],
-        )
-    except KeyError:
-        print("Getting Service Principal Authentication from Azure Devops")
-        svr_pr = None
-        pass
+    keyvault = ws.get_default_keyvault()
+    tenant_id = keyvault.get_secret('tenantId')
+    scv_pr_id = keyvault.get_secret("servicePrincipalId")
+    svc_pr_passwd = keyvault.get_secret("servicePrincipalPassword")
 
-    ws = Workspace.from_config(path=config_json, auth=svc_pr)
+    svc_pr = ServicePrincipalAuthentication(
+        tenant_id=tenant_id,
+        service_principal_id=scv_pr_id,
+        service_principal_password=svc_pr_passwd,
+    )
+
+    ws = Workspace(ws.subscription_id, ws.resource_group, ws.name, auth=svc_pr)
 
     try:
         model_root = Model.get_model_path("prednet_" + dataset, _workspace=ws)

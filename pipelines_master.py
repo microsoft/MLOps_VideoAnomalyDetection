@@ -40,6 +40,13 @@ ws = Workspace.create(
 
 print(ws.get_details)
 
+keyvault = ws.get_default_keyvault()
+keyvault.set_secret("tenantID", config["tenant_id"])
+keyvault.set_secret("servicePrincipalId", config["service_principal_id"])
+keyvault.set_secret(
+    "servicePrincipalPassword",
+    config["service_principal_password"])
+
 # folder for scripts that need to be uploaded to Aml compute target
 script_folder = "./scripts/"
 if os.path.exists(script_folder):
@@ -58,7 +65,6 @@ shutil.copy(os.path.join(base_dir, "register_prednet.py"), script_folder)
 shutil.copy(os.path.join(base_dir, "batch_scoring.py"), script_folder)
 shutil.copy(os.path.join(base_dir, "train_clf.py"), script_folder)
 shutil.copy(os.path.join(base_dir, "register_clf.py"), script_folder)
-shutil.copy(os.path.join(base_dir, "config.json"), script_folder)
 
 cpu_compute_name = config["cpu_compute"]
 try:
@@ -148,6 +154,12 @@ create_pipelines = PythonScriptStep(
     name="create pipelines",
     script_name="pipelines_create.py",
     compute_target=cpu_compute_target,
+    arguments=[
+        "--cpu_compute_name",
+        cpu_compute_name,
+        "--gpu_compute_name",
+        gpu_compute_name
+    ],
     source_directory=script_folder,
     runconfig=runconfig,
     allow_reuse=False,
