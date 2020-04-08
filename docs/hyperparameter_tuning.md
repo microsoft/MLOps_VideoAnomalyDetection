@@ -1,48 +1,61 @@
-# Hyperparameter Tuning with HyperDrive
+# Hyperparameter Tuning with HypderDrive
 
-> file: `hyperparameter_tuning.py`
-> 
-Let's see whether we can improve the performance of our model by tuning the hyperparameters.
+Take a look at the definition of the hyperdrive step in `pipeline_slave.py`.
 
-This requires the following steps:
-1. Configure AML workspace
-2. Upload the data to the default datastore of your workspace
-3. Define a remote AMLCompute compute target
-4. Prepare scripts for uploading to compute target
-5. Define Tensorflow estimator
-6. Configure HyperDrive run
-7. Submit job for execution.
+```
+    est = Estimator(
+        source_directory=script_folder,
+        compute_target=gpu_compute_target,
+        entry_script="train.py",
+        node_count=1,
+        environment_definition=env,
+    )
 
+    ps = BayesianParameterSampling(
+        {
+            "--batch_size": choice(1, 2, 4, 10),
+            "--filter_sizes": choice("3, 3, 3", "4, 4, 4", "5, 5, 5"),
+            "--stack_sizes": choice(
+                "48, 96, 192", "36, 72, 144", "12, 24, 48"
+            ),
+            "--learning_rate": uniform(1e-6, 1e-3),
+            "--lr_decay": uniform(1e-9, 1e-2),
+            "--freeze_layers": choice(
+                "0, 1, 2", "1, 2, 3", "0, 1", "1, 2", "2, 3", "0", "3"
+            ),
+            "--transfer_learning": choice("True", "False"),
+        }
+    )
 
-## Configure AML workspace
+    hdc = HyperDriveConfig(
+        estimator=est,
+        hyperparameter_sampling=ps,
+        primary_metric_name="val_loss",
+        primary_metric_goal=PrimaryMetricGoal.MINIMIZE,
+        max_total_runs=1,
+        max_concurrent_runs=1,
+        max_duration_minutes=60 * 6,
+    )
 
-First step is to attach to an AML workspace. 
+    train_prednet = HyperDriveStep(
+        "train_w_hyperdrive",
+        hdc,
+        estimator_entry_script_arguments=[
+            "--preprocessed_data",
+            preprocessed_data,
+            "--remote_execution",
+            "--dataset",
+            dataset,
+            # "--hd_child_cwd",
+            # hd_child_cwd
+        ],
+        inputs=[preprocessed_data],
+        outputs=[hd_child_cwd],
+        metrics_output=data_metrics,
+        allow_reuse=True,
+    )
+```
 
-If you don't have one yet, you can create one using this [documentation](https://github.com/MicrosoftDocs/azure-docs/blob/master/articles/machine-learning/service/setup-create-workspace.md#sdk).
+What this does is tell hyperdrive to explore whether transfer_learning benefits training. It also explores which layers to freeze during transfer learning. 
 
-We recommend storing the information in a [config.json](https://github.com/MicrosoftDocs/azure-docs/blob/master/articles/machine-learning/service/how-to-configure-environment.md#create-a-workspace-configuration-file) file in the root directory of this repository.
-
-
-## Upload the data to the default datastore of your workspace
-
-We upload the training data so that it can be mounted as remote drives in the aml compute targets.
-
-## Define a remote AMLCompute compute target
-
-We are using a `Standard_NC6` virtual machine. It is inexpensive and includes a GPU powerful enough for this purpose.
-
-## Prepare scripts for uploading to compute target
-
-The training script and dependencies have to be available to the job running on the compute target. 
-
-## Define Tensorflow estimator
-
-HyperDrive works best if we use an Estimator specifically defined for tensorflow models. 
-
-## Configure HyperDrive run
-
-Next, we define which hyperparameters to search over, and which strategy to use for searching.  Here, we are using `RandomParameterSampling` and a `BanditPolicy`.
-
-## Submit job for execution.
-
-Now everything is good to go.
+If transfer_learning is performed, the `train.py` script looks for an existing model in the model registry, downloads it, and starts retraining it for the current dataset. 

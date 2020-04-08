@@ -1,0 +1,1 @@
+Please follow the instructions [here](../docs/data_prep_w_pillow.md) to get the data into place.

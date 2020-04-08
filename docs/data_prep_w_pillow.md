@@ -1,12 +1,14 @@
 # Data Preparation
 
-> file: `data_prep.py`
+> file: `data_preparation.py`
 
 ## Download the data
 
-Download the data from the UCSD website and unpack it. 
+Download the data from the [UCSD website](http://www.svcl.ucsd.edu/projects/anomaly/dataset.htm) and unpack it in the `data` subdirectory of the root folder of your clone of this repository. 
 
-Create a folder `data` in the `video_anomaly` directory, and copy the folders `UCSDped1` and `UCSDped2` into that folder (e.g. `<project_root>/video_anomaly/data/UCSDpred1`). 
+You can tell whether you have the data in the right location by checking whether the following path exists: 
+
+``MLOps_VideoAnomalyDetection/data/UCSD_Anomaly_Dataset.v1p2/UCSDped1/Train/Train001``
 
 ## Data prep
 

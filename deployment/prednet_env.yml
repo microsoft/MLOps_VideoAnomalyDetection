@@ -1,11 +1,10 @@
 name: prednet_environment
 dependencies:
-- python=3.6.2
+- python=3.6
 
 - pip:
-  - keras==2.0.8
-  - theano
-  - tensorflow==1.8.0
+  - keras
+  - tensorflow==1.15
   - matplotlib
   - hickle
   - pandas
