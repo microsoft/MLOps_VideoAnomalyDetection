@@ -1,0 +1,32 @@
+script: train.py
+arguments:
+- --data-folder
+- DatasetConsumptionConfig:mnist
+target: cpu-cluster
+framework: python
+communicator: None
+environment:
+  name: conda-env
+  version:
+  environmentVariables:
+    EXAMPLE_ENV_VAR: EXAMPLE_VALUE
+  python:
+    userManagedDependencies: false
+    interpreterPath: python
+    condaDependenciesFile: .azureml/conda_dependencies.yml
+  docker:
+    baseImage: mcr.microsoft.com/azureml/base:intelmpi2018.3-ubuntu16.04
+
+dataReferences: {}
+data:
+  mnist:
+    dataLocation:
+      dataset:
+        id: ed4b4117-8eec-4a5f-afb6-481bd5ef0017
+      datapath:
+    createOutputDirectories: false
+    mechanism: mount
+    environmentVariableName: mnist
+    pathOnCompute:
+    overwrite: false
+
