@@ -52,6 +52,8 @@ A computer with a GPU, for example a Linux Azure VM.  Compare VM [sizes](https:/
 
 ## Agenda
 
+The recommended first step is to clone this repository.
+
 ### Getting Started
 
 1. [Data Preparation](./docs/data_prep_w_pillow.md) - Download and prepare data for training/testing.
@@ -66,6 +68,10 @@ A computer with a GPU, for example a Linux Azure VM.  Compare VM [sizes](https:/
 1. [Fine Tuning](./docs/fine_tuning.md) - Perform transfer learning with pretrained model onnew data.
 1. [Hyperparameter tuning](./docs/hyperparameter_tuning.md) - Tune hyperparameters with HyperDrive.
 1. [Anomaly Detection](./docs/anomaly_detection.md) - Use Model errors for detecting anomalies.
+
+## Contribute
+
+We invite contributions to this repository. The preferred method would be to fork this repository and to create a pull request.
 
 ## References / Resources
 
