@@ -35,7 +35,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--model_path",
-    default="./data/model_path/",
+    default="./outputs/",
     type=str,
     dest="model_path",
     help=("path to model"),
@@ -52,6 +52,7 @@ args = parser.parse_args()
 
 run = Run.get_context()
 
+# run batch_scoring if this data frame is missing
 df = pd.read_pickle(os.path.join(args.scored_data, "df.pkl.gz"))
 
 # create feature set

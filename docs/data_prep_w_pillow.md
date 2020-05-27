@@ -45,10 +45,10 @@ We resize the images so that they match the size of the input layer of our model
 
 We then insert the preprocessed video frames into numpy arrays, one array for each dataset spilt.  This array has the dimensions n_images * height * width * depth.
 
-We create a second array that will contains for each video frame the folder that it was stored in.  We will use this information to determine which video sequence a video frame belongs to.rchive for fast loading.
+We create a second array that will tell for each video frame the folder that it was stored in.  We will use this information to determine which video sequence a video frame belongs to.
 
 ## Save the processed video data
 
 We [Hickle](https://github.com/telegraphic/hickle) the created arrays to a binary [HDF5](https://en.wikipedia.org/wiki/Hierarchical_Data_Format) file.
 
-Note, that this binary file as the potential to expose you to version skew. That is, you won't be able to load data into Python 3 if it was stored in Python 2.
+Note, that this binary file has the potential to expose you to version skew. That is, you won't be able to load data into Python 3 if it was stored in Python 2.

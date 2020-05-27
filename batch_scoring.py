@@ -40,7 +40,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--prednet_path",
-    default="prednet_path",
+    default=".",
     type=str,
     dest="prednet_path",
     help=("path to prednet model"),

@@ -44,7 +44,7 @@ You will learn:
 
 ## Hardware Dependencies
 
-A computer with a GPU, for example an Azure VM.  Compare VM [sizes](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-gpu) and [prices](https://azure.microsoft.com/en-us/pricing/details/virtual-machines/windows/)).
+A computer with a GPU, for example a Linux Azure VM.  Compare VM [sizes](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes-gpu) and [prices](https://azure.microsoft.com/en-us/pricing/details/virtual-machines/linux/)).  If you don't know what to choose, we recommend the Standard NC6, the most affordable VM with a GPU.
 
 ## Dataset
 
