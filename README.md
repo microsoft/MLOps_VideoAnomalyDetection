@@ -6,20 +6,20 @@ The automation of detecting anomalous event sequences in videos is a challenging
 
 The approach followed in this repository involves self-supervised training deep neural networks to develop an in-depth understanding of the physical and causal rules in the observed scenes. The model effectively learns to predict future frames in the video in a self-supervised fashion. 
 
-By calculating the error in this prediction, it is then possible to detect if something unusual, an anomalous event, occurred, if there is a large prediction error.  
+The trained model can then be used to detect anomalies in videos. As the model tries to predict each next frame, one can calculate the error in the model's prediction. If the error is large, it is likely that an anomalous even occurred.
 
 The approach can be used both in a supervised and unsupervised fashion, thus enabling the detection of pre-defined anomalies, but also of anomalous events that have never occurred in the past. 
 
-> Post on [LinkedIn](https://www.linkedin.com/feed/update/urn:li:activity:6512538611181846528) (includes video demonstration)
+> Post on [LinkedIn](https://www.linkedin.com/feed/update/urn:li:activity:6512538611181846528) (includes **video**)
 
 # Learning Goals
 
 You will learn:
 1. How to adapt an existing neural network architecture to your use-case.
 1. How to prepare video data for deep learning. 
-1. How to perform hyperparameter tuning with [HyperDrive](https://azure.microsoft.com/en-us/blog/experimentation-using-azure-machine-learning/) to improve the performance of you model.
+1. How to perform hyperparameter tuning with [HyperDrive](https://azure.microsoft.com/en-us/blog/experimentation-using-azure-machine-learning/) to improve the performance of your model.
 1. How to deploy a deep neural network as a webservice for video processing. 
-1. How to post-process the output of a Keras model for secondary tasks (here, anomaly detection)
+1. How to post-process the output of a Keras model for secondary tasks (here, anomaly detection).
 2. How to define a build pipeline for DevOps.
 
 
