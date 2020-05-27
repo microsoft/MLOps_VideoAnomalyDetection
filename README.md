@@ -46,6 +46,8 @@ You will learn:
 
 A computer with a GPU, for example a Linux Azure VM.  Compare VM [sizes](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes-gpu) and [prices](https://azure.microsoft.com/en-us/pricing/details/virtual-machines/linux/)).  If you don't know what to choose, we recommend the Standard NC6, the most affordable VM with a GPU.
 
+You could create a VM in the [Azure Portal](https://ms.portal.azure.com/#create/microsoft-dsvm.ubuntu-18041804).
+
 ## Dataset
 
 [UCSD Anomaly Detection Dataset](http://www.svcl.ucsd.edu/projects/anomaly/dataset.htm)
