@@ -84,7 +84,7 @@ def build_prednet_pipeline(dataset, ws):
     hd_child_cwd = PipelineData(
         "prednet_model_path",
         datastore=def_blob_store)
-    prednet_path = PipelineData("output_data", datastore=def_blob_store)
+    # prednet_path = PipelineData("outputs", datastore=def_blob_store)
     scored_data = PipelineData("scored_data", datastore=def_blob_store)
     model_path = PipelineData("model_path", datastore=def_blob_store)
 
@@ -172,11 +172,12 @@ def build_prednet_pipeline(dataset, ws):
             data_metrics,
             # "--hd_child_cwd",
             # hd_child_cwd,
-            "--prednet_path",
-            prednet_path],
+            # "--prednet_path",
+            # prednet_path
+            ],
         compute_target=cpu_compute_target,
         inputs=[data_metrics, hd_child_cwd],
-        outputs=[prednet_path],
+        # outputs=[prednet_path],
         source_directory=script_folder,
         allow_reuse=True,
     )
@@ -192,16 +193,17 @@ def build_prednet_pipeline(dataset, ws):
             scored_data,
             "--dataset",
             dataset,
-            "--prednet_path",
-            prednet_path],
+            # "--prednet_path",
+            # prednet_path
+            ],
         compute_target=gpu_compute_target,
-        inputs=[preprocessed_data, prednet_path],
+        inputs=[preprocessed_data],
         outputs=[scored_data],
         source_directory=script_folder,
         runconfig=runconfig,
         allow_reuse=True,
     )
-    batch_scoring.run_after(train_prednet)
+    batch_scoring.run_after(register_prednet)
 
     train_clf = PythonScriptStep(
         name="train_clf",
@@ -242,6 +244,7 @@ def build_prednet_pipeline(dataset, ws):
             data_prep,
             train_prednet,
             register_prednet,
+            batch_scoring,
             train_clf,
             register_clf,
         ],

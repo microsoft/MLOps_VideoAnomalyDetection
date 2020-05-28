@@ -1,4 +1,6 @@
 import json
+import os
+
 from azureml.core.runconfig import CondaDependencies
 from azureml.core import Workspace
 from azureml.core.model import Model
@@ -8,7 +10,7 @@ from azureml.core.image import ContainerImage, Image
 ws = Workspace.from_config()
 
 prednet_model_name = 'prednet_UCSDped1'
-prednet_model_version = 2
+prednet_model_version = 1
 logistic_regression_model_name = 'logistic_regression'
 logistic_regression_model_version = 1
 
@@ -46,12 +48,11 @@ print("Image name:", image_name)
 
 image = Image.create(
   name=image_name,
-  models=[prednet_model],
+  models=[prednet_model, logistic_regression_model],
   image_config=img_config,
   workspace=ws)
 
 image.wait_for_creation(show_output=True)
-
 
 if image.creation_state != 'Succeeded':
   raise Exception('Image creation status: {image.creation_state}')

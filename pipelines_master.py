@@ -29,13 +29,11 @@ auth = ServicePrincipalAuthentication(
     service_principal_password=config["service_principal_password"],
 )
 
-ws = Workspace.create(
+ws = Workspace(
+    config["subscription_id"],
+    config["resource_group"],
     config["workspace_name"],
-    location=config["workspace_region"],
-    resource_group=config["resource_group"],
-    subscription_id=config["subscription_id"],
-    auth=auth,
-    exist_ok=True
+    auth=auth
 )
 
 print(ws.get_details)
@@ -77,6 +75,7 @@ except Exception:  # ComputeTargetException:
         vm_size="STANDARD_D2_V2",
         max_nodes=4,
         idle_seconds_before_scaledown=1800,
+        vm_priority="lowpriority"
     )
     cpu_compute_target = ComputeTarget.create(
         ws, cpu_compute_name, provisioning_config
@@ -97,6 +96,7 @@ except Exception:
         vm_size="STANDARD_NC6",
         max_nodes=10,
         idle_seconds_before_scaledown=1800,
+        vm_priority="lowpriority"
     )
 
     # create the cluster

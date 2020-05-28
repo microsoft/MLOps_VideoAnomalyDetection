@@ -9,10 +9,10 @@ parser.add_argument(
     '--data_metrics',
     dest="data_metrics",
     default="data_metrics")
-parser.add_argument(
-    '--prednet_path',
-    dest="prednet_path",
-    default="prednet_path")
+# parser.add_argument(
+#     '--prednet_path',
+#     dest="prednet_path",
+#     default="prednet_path")
 
 args = parser.parse_args()
 print("all args: ", args)
@@ -55,7 +55,7 @@ experiment_name = environment_definition['name'].split()[1]
 exp = Experiment(ws, name=experiment_name)
 best_run = Run(exp, best_run_id)
 
-output_dir = './'  # 'outputs'
+model_dir = 'outputs/model'  # 'outputs'
 
 # register the model
 if best_run_id:
@@ -63,9 +63,9 @@ if best_run_id:
     tags['run_id'] = best_run_id
     tags['val_loss'] = metrics[best_run_id]['val_loss'][-1]
     model = best_run.register_model(model_name=experiment_name,
-                                    model_path=output_dir,
+                                    model_path=model_dir,
                                     tags=tags)
-    model.download(target_dir=args.prednet_path)
+    # model.download(target_dir=args.prednet_path)
 else:
     raise Exception("Couldn't not find a model to register."
                     "Probably because no run completed")

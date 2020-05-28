@@ -1,10 +1,23 @@
 # Data Preparation
 
+You can execute the following script to prepare data locally:
+
 > file: `data_preparation.py`
+> runtime: ~1 minute
+
+Note: As mentioned in the [README](../README.md) file, consider using a Conda Environmnet.  This can be done with the simple command: `conda env create -f config/environment.yml`
 
 ## Download the data
 
 Download the data from the [UCSD website](http://www.svcl.ucsd.edu/projects/anomaly/dataset.htm) and unpack it in the `data` subdirectory of the root folder of your clone of this repository. 
+
+For example, you could run the following in Bash:
+```
+cd /tmp
+wget http://www.svcl.ucsd.edu/projects/anomaly/UCSD_Anomaly_Dataset.tar.gz
+cd /home/wopauli/MLOps_VideoAnomalyDetection/data
+tar xzvf /tmp/UCSD_Anomaly_Dataset.tar.gz
+```
 
 You can tell whether you have the data in the right location by checking whether the following path exists: 
 

@@ -2,29 +2,17 @@ import json
 import numpy as np
 import os
 from keras.models import model_from_json
-from prednet import PredNet
 from keras.layers import Input
 from azureml.core.model import Model
 from keras.models import Model as Model_keras
 import joblib
+from models.prednet.prednet import PredNet
 
 
-def init():
-
-    global prednet_model, logistic_regression_model
-
+def load_prednet_model(name):
     nt = 10
+    prednet_path = Model.get_model_path(name)
 
-    # logistic regression model for detecing anomalies based on model output
-    try:
-        model_path = Model.get_model_path("logistic_regression")
-        logistic_regression_model = joblib.load(model_path)
-    except Exception as e:
-        print(e)
-        logistic_regression_model = None
-
-    prednet_path = Model.get_model_path('prednet_UCSDped1')
-    # model_root = model_root.strip('model.json')
     print(prednet_path)
     # load json and create model
     with open(os.path.join(prednet_path, 'model.json'), 'r') as json_file:
@@ -35,7 +23,7 @@ def init():
         custom_objects={"PredNet": PredNet})
 
     # load weights into new model
-    trained_model.load_weights(os.path.join(prednet_path, "weights.hdf5"))   
+    trained_model.load_weights(os.path.join(prednet_path, "weights.hdf5"))
 
     # Create testing model (to output predictions)
     layer_config = trained_model.layers[1].get_config()
@@ -50,14 +38,36 @@ def init():
     predictions = test_prednet(inputs)
     prednet_model = Model_keras(inputs=inputs, outputs=predictions)
 
+    return prednet_model
+
+
+def init():
+
+    global prednet_models, clf_models
+
+    print("cwd:", os.getcwd())
+    with open('deployment_assets/models.json', 'r') as f:
+        models = json.load(f)
+
+    prednet_models = {}
+    for name in models['prednet_model_names']:
+        prednet_models[name] = load_prednet_model(name)
+
+    clf_models = {}
+    for name in models['clf_model_names']:
+        model_path = Model.get_model_path(name)
+        clf_models[name] = joblib.load(model_path)
+
 
 def run(raw_data):
     # convert json data to numpy array
-    data = np.array(json.loads(raw_data)['data'])
+    json_data = json.loads(raw_data)
+    camera_id = json_data['id']
+    data = np.array(json_data['data'])
     data = data[np.newaxis, :]
 
     # make predictions
-    X_hat = prednet_model.predict(data)
+    X_hat = prednet_models["prednet_" + camera_id].predict(data)
 
     # calculate error
     model_err = data - X_hat
@@ -68,11 +78,8 @@ def run(raw_data):
     # look at all timesteps except the first
     model_std = np.std((model_err)**2, axis=(2, 3, 4))
 
-    model_std = np.reshape(model_std, (np.prod(model_std.shape), 1))
+    model_std = np.reshape(model_std, (np.prod(model_std.shape), 1)).tolist()
 
-    if logistic_regression_model:
-        is_anom = logistic_regression_model.predict(model_std).tolist()
-    else:
-        is_anom = False
+    is_anom = clf_models["clf" + camera_id].predict(model_std).tolist()
 
     return (model_std, is_anom)
