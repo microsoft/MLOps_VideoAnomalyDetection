@@ -11,7 +11,7 @@ from models.prednet.prednet import PredNet
 
 
 def load_prednet_model(name):
-    nt = 20
+    nt = 10
     prednet_path = Model.get_model_path(name)
 
     print(prednet_path)
