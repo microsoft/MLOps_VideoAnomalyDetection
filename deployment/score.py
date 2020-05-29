@@ -11,7 +11,7 @@ from models.prednet.prednet import PredNet
 
 
 def load_prednet_model(name):
-    nt = 10
+    nt = 20
     prednet_path = Model.get_model_path(name)
 
     print(prednet_path)
@@ -85,13 +85,13 @@ def run(raw_data):
     model_p_95 = np.percentile((model_err) ** 2, 95, axis=(2, 3, 4))
     model_p_99 = np.percentile((model_err) ** 2, 99, axis=(2, 3, 4))
 
-    model_mse = np.reshape(model_mse, (np.prod(model_mse.shape), 1))
-    model_p_50 = np.reshape(model_p_50, (np.prod(model_mse.shape), 1))
-    model_p_75 = np.reshape(model_p_75, (np.prod(model_mse.shape), 1))
-    model_p_90 = np.reshape(model_p_90, (np.prod(model_mse.shape), 1))
-    model_p_95 = np.reshape(model_p_95, (np.prod(model_mse.shape), 1))
-    model_p_99 = np.reshape(model_p_99, (np.prod(model_mse.shape), 1))
-    model_std = np.reshape(model_std, (np.prod(model_mse.shape), 1))
+    model_mse = np.reshape(model_mse, np.prod(model_mse.shape))
+    model_p_50 = np.reshape(model_p_50, np.prod(model_mse.shape))
+    model_p_75 = np.reshape(model_p_75, np.prod(model_mse.shape))
+    model_p_90 = np.reshape(model_p_90, np.prod(model_mse.shape))
+    model_p_95 = np.reshape(model_p_95, np.prod(model_mse.shape))
+    model_p_99 = np.reshape(model_p_99, np.prod(model_mse.shape))
+    model_std = np.reshape(model_std, np.prod(model_mse.shape))
 
     df = pd.DataFrame(
         {
@@ -105,6 +105,6 @@ def run(raw_data):
         }
     )
 
-    is_anom = clf_models["clf" + camera_id].predict(df).tolist()
+    is_anom = clf_models["clf_" + camera_id].predict(df).tolist()
 
     return (is_anom)

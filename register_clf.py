@@ -7,7 +7,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     '--model_path',
     dest="model_path",
-    default="data/model_path/")
+    default="./outputs/")
 parser.add_argument(
     "--dataset",
     dest="dataset",
@@ -28,4 +28,4 @@ except AttributeError:
 model = Model.register(
     ws,
     os.path.join(args.model_path, "model.pkl"),
-    model_name="clf" + args.dataset)
+    model_name="clf_" + args.dataset)

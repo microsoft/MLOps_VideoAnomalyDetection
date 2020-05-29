@@ -100,7 +100,7 @@ except AttributeError:
     ws = Workspace.from_config()
 
 model = Model(ws, name='prednet_' + args.dataset)
-model.download()
+model.download(exist_ok=True)
 
 # check/create path for saving output
 # extent data_dir for current dataset

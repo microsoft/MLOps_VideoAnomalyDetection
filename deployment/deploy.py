@@ -47,9 +47,9 @@ models = []
 
 for model in models_init:
     if model.name not in clf_model_names + prednet_model_names:
-        if model.name.startswith("prednet"):
+        if model.name.startswith("prednet_"):
             prednet_model_names.append(model.name)
-        elif model.name.startswith("clf"):
+        elif model.name.startswith("clf_"):
             clf_model_names.append(model.name)
         models.append(model)
 
