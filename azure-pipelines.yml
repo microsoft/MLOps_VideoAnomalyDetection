@@ -29,14 +29,7 @@ steps:
   displayName: 'Install prerequisites'
 
 - task: AzureCLI@1
-  displayName: 'Disable existing pipelines'
-  inputs:
-    azureSubscription: 'serviceConnection'
-    scriptLocation: inlineScript
-    inlineScript: 'python utils.py --disable-pipelines'
-
-- task: AzureCLI@1
-  displayName: 'Build and Publish Pipelines'
+  displayName: 'Build and Publish Master Pipeline'
   inputs:
     azureSubscription: 'serviceConnection'
     scriptLocation: inlineScript
