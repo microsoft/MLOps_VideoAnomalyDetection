@@ -53,6 +53,12 @@ for model in models_init:
             clf_model_names.append(model.name)
         models.append(model)
 
+with open(os.path.join(source_directory, 'models.json'), 'w') as f:
+    json.dump({
+        "prednet_model_names": prednet_model_names,
+        "clf_model_names": clf_model_names
+        }, f)
+
 env = Environment.get(ws, 'prednet')
 env.python.conda_dependencies.add_pip_package('azureml-defaults')
 
@@ -61,13 +67,6 @@ inference_config = InferenceConfig(
     environment=env,
     source_directory=source_directory)
 
-with open(os.path.join(source_directory, 'models.json'), 'w') as f:
-    json.dump({
-        "prednet_model_names": prednet_model_names,
-        "clf_model_names": clf_model_names
-        }, f)
-
-# Use the default configuration (can also provide parameters to customize)
 prov_config = AksCompute.provisioning_configuration(cluster_purpose="DevTest")
 
 aks_name = 'videoanom-aks'
@@ -77,12 +76,11 @@ try:
 except Exception:
     # Create the cluster
     aks_target = ComputeTarget.create(
-        workspace=ws, 
+        workspace=ws,
         name=aks_name,
         provisioning_configuration=prov_config)
     aks_target.wait_for_completion(show_output=True)
 
-# Set the web service configuration (using default here)
 aks_config = AksWebservice.deploy_configuration()
 
 aks_service_name = 'videoanom-service'

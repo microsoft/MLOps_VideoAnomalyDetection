@@ -46,7 +46,6 @@ def init():
 
     global prednet_models, clf_models
 
-    print("cwd:", os.getcwd())
     with open('deployment_assets/models.json', 'r') as f:
         models = json.load(f)
 

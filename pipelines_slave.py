@@ -131,7 +131,7 @@ def build_prednet_pipeline(dataset, ws):
             "--freeze_layers": choice(
                 "0, 1, 2", "1, 2, 3", "0, 1", "1, 2", "2, 3", "0", "3"
             ),
-            "--fine_tuning": choice("True", "False"),
+            # "--fine_tuning": choice("True", "False"),
         }
     )
 
@@ -140,8 +140,8 @@ def build_prednet_pipeline(dataset, ws):
         hyperparameter_sampling=ps,
         primary_metric_name="val_loss",
         primary_metric_goal=PrimaryMetricGoal.MINIMIZE,
-        max_total_runs=1,
-        max_concurrent_runs=1,
+        max_total_runs=3,
+        max_concurrent_runs=3,
         max_duration_minutes=60 * 6,
     )
 
@@ -154,8 +154,6 @@ def build_prednet_pipeline(dataset, ws):
             "--remote_execution",
             "--dataset",
             dataset,
-            # "--hd_child_cwd",
-            # hd_child_cwd
         ],
         inputs=[preprocessed_data],
         outputs=[hd_child_cwd],
@@ -170,14 +168,9 @@ def build_prednet_pipeline(dataset, ws):
         arguments=[
             "--data_metrics",
             data_metrics,
-            # "--hd_child_cwd",
-            # hd_child_cwd,
-            # "--prednet_path",
-            # prednet_path
             ],
         compute_target=cpu_compute_target,
         inputs=[data_metrics, hd_child_cwd],
-        # outputs=[prednet_path],
         source_directory=script_folder,
         allow_reuse=True,
     )
@@ -249,10 +242,7 @@ def build_prednet_pipeline(dataset, ws):
             register_clf,
         ],
     )
-    print("Pipeline is built")
-
     pipeline.validate()
-    print("Simple validation complete")
 
     pipeline_name = "prednet_" + dataset
     published_pipeline = pipeline.publish(name=pipeline_name)
