@@ -93,7 +93,8 @@ aks_service = Model.deploy(
     models=models,
     inference_config=inference_config,
     deployment_config=aks_config,
-    deployment_target=aks_target)
+    deployment_target=aks_target,
+    overwrite=True)
 
 aks_service.wait_for_deployment(show_output=True)
 
