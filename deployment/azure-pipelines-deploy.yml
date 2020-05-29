@@ -9,27 +9,31 @@ steps:
 - task: DownloadSecureFile@1
   inputs:
     name: configFile
-    secureFile: config.json
+    secureFile: wopauli_config.json
 - script: echo "Printing the secure file path. You can generate the required config file by running az ml folder attach at the root of your git repository." 
-- script: cp $(Agent.TempDirectory)/config.json $(Build.SourcesDirectory)/config.json
+- script: cp $(Agent.TempDirectory)/wopauli_config.json $(Build.SourcesDirectory)/config.json
+
+- task: CondaEnvironment@1
+  displayName: 'Create Conda Environment '
+  inputs:
+    createCustomEnvironment: true
+    environmentName: prednet
+    packageSpecs: 'python=3.6'
+    updateConda: false
+- script: |
+    pip install --user azureml-sdk azure-storage-blob==2.1.0
+  displayName: 'Install prerequisites'
 
 - task: AzureCLI@1
-  displayName: 'Install the CLI'
+  displayName: "Deploy as Webservice"'
   inputs:
     azureSubscription: 'serviceConnection'
     scriptLocation: inlineScript
-    inlineScript: 'az extension add -n azure-cli-ml'
+    inlineScript: 'python deployment/deploy.py'
 
 - task: AzureCLI@1
-  displayName: 'Deploy model'
+  displayName: "Test Webservice"'
   inputs:
     azureSubscription: 'serviceConnection'
     scriptLocation: inlineScript
-    inlineScript: 'az ml model deploy -n prednettest -m prednet_UCSDped1:1 --ic inferenceConfig.json --dc deploymentConfig.json'
-
-- task: AzureCLI@1
-  displayName: 'get service log'
-  inputs:
-    azureSubscription: 'serviceConnection'
-    scriptLocation: inlineScript
-    inlineScript: 'az ml service get-logs -n prednettest'
+    inlineScript: 'python deployment/test_webservice.py'

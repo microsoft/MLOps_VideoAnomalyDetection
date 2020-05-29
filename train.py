@@ -24,6 +24,9 @@ from models.prednet.data_utils import SequenceGenerator
 
 import urllib.request
 
+from azureml.core import Run
+from azureml.core import VERSION
+
 print("defining str2bool")
 
 
@@ -112,7 +115,7 @@ parser.add_argument(
 parser.add_argument(
     "--fine_tuning",
     dest="fine_tuning",
-    default="True",
+    default="False",
     help="use the benchmark model and perform fine tuning",
     type=str,
     required=False,
@@ -133,9 +136,27 @@ parser.add_argument(
     type=str,
     required=False,
 )
+parser.add_argument(
+    "--samples_per_epoch",
+    dest="samples_per_epoch",
+    default=10,
+    help="n samples per epoch",
+    type=int,
+    required=False,
+)
+parser.add_argument(
+    "--nb_epoch",
+    dest="nb_epoch",
+    default=150,
+    help="max number of epochs",
+    type=int,
+    required=False,
+)
 
 print("parsing args")
 args = parser.parse_args()
+nb_epoch = args.nb_epoch
+samples_per_epoch = args.samples_per_epoch
 learning_rate = args.learning_rate
 lr_decay = args.lr_decay
 stack_sizes_arg = tuple(map(int, args.stack_sizes_arg.split(",")))
@@ -184,16 +205,14 @@ if "coursematerial" in preprocessed_data:
 # create a ./outputs folder in the compute target
 # files saved in the "./outputs" folder are automatically uploaded into
 # run history
-output_dir = 'outputs'
-os.makedirs(output_dir, exist_ok=True)
+model_dir = 'outputs/model'
+os.makedirs(model_dir, exist_ok=True)
 
 # initiate logging if we are running remotely
 if remote_execution:
     print("Running on remote compute target:", remote_execution)
-    from azureml.core import VERSION
 
     print("azureml.core.VERSION", VERSION)
-    from azureml.core import Run
 
     # start an Azure ML run
     run = Run.get_context()
@@ -217,8 +236,6 @@ n_channels, im_height, im_width = (3, 152, 232)
 
 # settings for sampling the video data
 nt = 10  # number of timesteps used for sequences in training
-samples_per_epoch = 75
-nb_epoch = 1  # 150
 N_seq_val = 15  # number of sequences to use for validation
 
 # settings for training and optimization
@@ -229,8 +246,8 @@ save_model = True  # if weights will be saved
 return_sequences = True
 
 # define location for saving model and weights
-weights_file = os.path.join(output_dir, "weights.hdf5")
-json_file = os.path.join(output_dir, "model.json")
+weights_file = os.path.join(model_dir, "weights.hdf5")
+json_file = os.path.join(model_dir, "model.json")
 
 # Load data and source files
 X_train_file = os.path.join(preprocessed_data, "X_train.hkl")
@@ -405,7 +422,7 @@ model = keras.models.Model(inputs=inputs, outputs=final_errors)
 model.compile(loss=loss_type, optimizer=optimizer)
 if fine_tuning:
     model.load_weights(
-        os.path.join(model_root, "outputs", "weights.hdf5"),
+        os.path.join(model_root, model_dir, "weights.hdf5"),
         by_name=True,
         skip_mismatch=True)
 
@@ -430,7 +447,7 @@ if save_model:
 # log training results to a file
 callbacks.append(
     CSVLogger(
-        filename=os.path.join(output_dir, "train.log"),
+        filename=os.path.join("train.log"),
         separator=",",
         append=False,
     )
@@ -520,5 +537,5 @@ plt.close()
 model_json = model.to_json()
 
 # save model JSON
-with open(os.path.join(output_dir, "model.json"), "w") as f:
+with open(os.path.join(model_dir, "model.json"), "w") as f:
     f.write(model_json)

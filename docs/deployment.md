@@ -9,9 +9,9 @@ This can be done with the following steps.
 3. Deploy the docker image as a webservice
 4. Test the webservice
 
-The webservice *expects* video data inform of a numpy array (n_frames, heigh, width, depth). This array needs to be converted to a list and then into byte encoded json format.
+The webservice *expects* video data in form of a numpy array (n_frames, heigh, width, depth). This array needs to be converted to a list and then into byte encoded json format.
 
-The webservice *returns* the mean squared error of the model's predictions of each video frames.
+The webservice *returns* the standard deviation of squared prediction errors at each pixel for each video frames.
 
 
 ## Create scoring script
@@ -28,7 +28,7 @@ Apart from importing the modules needed for processing data and creating the net
 
 ## Create a docker image
 
-Filename: `created_docker_iamge.py`
+Filename: `deployment/created_docker_image.py`
 
 We use the above scoring script, define dependencies for a conda environmnet in which to execute the scoring script, and also include all custom scripts needed by the scoring script.
 
@@ -39,4 +39,4 @@ Filename: `deploy_aci.py`
 
 ## Test the webservice
 
-Use the script `test_aci.py` to see whether you webservices behaves as expected.
+Use the script `test_aci.py` to see whether your webservice behaves as expected.

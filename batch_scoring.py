@@ -18,6 +18,9 @@ from models.prednet.prednet import PredNet
 from models.prednet.data_utils import TestsetGenerator
 import argparse
 
+from azureml.core.model import Model
+from azureml.core import Workspace, Run
+
 matplotlib.use("Agg")
 
 # Define args
@@ -38,13 +41,13 @@ parser.add_argument(
     help=("path to data and annotations (annotations should"
           "be in <data_dir>/<dataset>/Test/<dataset>.m"),
 )
-parser.add_argument(
-    "--prednet_path",
-    default="prednet_path",
-    type=str,
-    dest="prednet_path",
-    help=("path to prednet model"),
-)
+# parser.add_argument(
+#     "--prednet_path",
+#     default=".",
+#     type=str,
+#     dest="prednet_path",
+#     help=("path to prednet model"),
+# )
 parser.add_argument(
     "--dataset",
     default="UCSDped1",
@@ -90,6 +93,15 @@ if tf.test.is_gpu_available():
 else:
     print("Did not find GPU")
 
+run = Run.get_context()
+try:
+    ws = run.experiment.workspace
+except AttributeError:
+    ws = Workspace.from_config()
+
+model = Model(ws, name='prednet_' + args.dataset)
+model.download(exist_ok=True)
+
 # check/create path for saving output
 # extent data_dir for current dataset
 scored_data = os.path.join(args.scored_data, args.dataset, "Test")
@@ -107,8 +119,8 @@ test_sources = os.path.join(
 X = hkl.load(test_file)
 sources = hkl.load(test_sources)
 
-weights_file = os.path.join(args.prednet_path, "outputs", "weights.hdf5")
-json_file = os.path.join(args.prednet_path, "outputs", "model.json")
+weights_file = os.path.join("model", "weights.hdf5")
+json_file = os.path.join("model", "model.json")
 print("weight and json file")
 print(weights_file)
 print(json_file)

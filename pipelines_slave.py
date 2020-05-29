@@ -84,7 +84,7 @@ def build_prednet_pipeline(dataset, ws):
     hd_child_cwd = PipelineData(
         "prednet_model_path",
         datastore=def_blob_store)
-    prednet_path = PipelineData("output_data", datastore=def_blob_store)
+    # prednet_path = PipelineData("outputs", datastore=def_blob_store)
     scored_data = PipelineData("scored_data", datastore=def_blob_store)
     model_path = PipelineData("model_path", datastore=def_blob_store)
 
@@ -131,7 +131,7 @@ def build_prednet_pipeline(dataset, ws):
             "--freeze_layers": choice(
                 "0, 1, 2", "1, 2, 3", "0, 1", "1, 2", "2, 3", "0", "3"
             ),
-            "--fine_tuning": choice("True", "False"),
+            # "--fine_tuning": choice("True", "False"),
         }
     )
 
@@ -140,8 +140,8 @@ def build_prednet_pipeline(dataset, ws):
         hyperparameter_sampling=ps,
         primary_metric_name="val_loss",
         primary_metric_goal=PrimaryMetricGoal.MINIMIZE,
-        max_total_runs=1,
-        max_concurrent_runs=1,
+        max_total_runs=3,
+        max_concurrent_runs=3,
         max_duration_minutes=60 * 6,
     )
 
@@ -154,8 +154,6 @@ def build_prednet_pipeline(dataset, ws):
             "--remote_execution",
             "--dataset",
             dataset,
-            # "--hd_child_cwd",
-            # hd_child_cwd
         ],
         inputs=[preprocessed_data],
         outputs=[hd_child_cwd],
@@ -170,13 +168,9 @@ def build_prednet_pipeline(dataset, ws):
         arguments=[
             "--data_metrics",
             data_metrics,
-            # "--hd_child_cwd",
-            # hd_child_cwd,
-            "--prednet_path",
-            prednet_path],
+            ],
         compute_target=cpu_compute_target,
         inputs=[data_metrics, hd_child_cwd],
-        outputs=[prednet_path],
         source_directory=script_folder,
         allow_reuse=True,
     )
@@ -192,16 +186,17 @@ def build_prednet_pipeline(dataset, ws):
             scored_data,
             "--dataset",
             dataset,
-            "--prednet_path",
-            prednet_path],
+            # "--prednet_path",
+            # prednet_path
+            ],
         compute_target=gpu_compute_target,
-        inputs=[preprocessed_data, prednet_path],
+        inputs=[preprocessed_data],
         outputs=[scored_data],
         source_directory=script_folder,
         runconfig=runconfig,
         allow_reuse=True,
     )
-    batch_scoring.run_after(train_prednet)
+    batch_scoring.run_after(register_prednet)
 
     train_clf = PythonScriptStep(
         name="train_clf",
@@ -242,14 +237,12 @@ def build_prednet_pipeline(dataset, ws):
             data_prep,
             train_prednet,
             register_prednet,
+            batch_scoring,
             train_clf,
             register_clf,
         ],
     )
-    print("Pipeline is built")
-
     pipeline.validate()
-    print("Simple validation complete")
 
     pipeline_name = "prednet_" + dataset
     published_pipeline = pipeline.publish(name=pipeline_name)

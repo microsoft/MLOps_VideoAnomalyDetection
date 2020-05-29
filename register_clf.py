@@ -7,8 +7,15 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     '--model_path',
     dest="model_path",
-    default="data/model_path/")
-
+    default="./outputs/")
+parser.add_argument(
+    "--dataset",
+    dest="dataset",
+    default="UCSDped1",
+    help="the dataset that we are using",
+    type=str,
+    required=False,
+)
 args = parser.parse_args()
 print("all args: ", args)
 
@@ -21,4 +28,4 @@ except AttributeError:
 model = Model.register(
     ws,
     os.path.join(args.model_path, "model.pkl"),
-    model_name="logistic_regression")
+    model_name="clf_" + args.dataset)
