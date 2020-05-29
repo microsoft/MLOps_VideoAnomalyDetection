@@ -2,6 +2,7 @@ import os
 import pickle
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
     precision_score,
@@ -56,15 +57,17 @@ run = Run.get_context()
 df = pd.read_pickle(os.path.join(args.scored_data, "df.pkl.gz"))
 
 # create feature set
-X = df.loc[
-    :, ["model_std"]
-]
+# X = df.loc[
+#     :, ["model_std"]
+# ]
+X = df
 y = hkl.load(os.path.join(args.preprocessed_data, args.dataset, "y_test.hkl"))
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=123)
 
 clf = (
-    LogisticRegression()
+    # LogisticRegression()
+    RandomForestClassifier()
 )
 
 scaler = MinMaxScaler(copy=True, feature_range=(0, 1))

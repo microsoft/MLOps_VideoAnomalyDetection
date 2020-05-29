@@ -1,5 +1,6 @@
 import json
 import numpy as np
+import pandas as pd
 import os
 from keras.models import model_from_json
 from keras.layers import Input
@@ -76,10 +77,34 @@ def run(raw_data):
     model_err[:, 0, :, :, :] = 0
 
     # look at all timesteps except the first
-    model_std = np.std((model_err)**2, axis=(2, 3, 4))
+    model_std = np.std((model_err) ** 2, axis=(2, 3, 4))
+    model_mse = np.mean((model_err) ** 2, axis=(2, 3, 4))
+    model_p_50 = np.percentile((model_err) ** 2, 50, axis=(2, 3, 4))
+    model_p_75 = np.percentile((model_err) ** 2, 75, axis=(2, 3, 4))
+    model_p_90 = np.percentile((model_err) ** 2, 90, axis=(2, 3, 4))
+    model_p_95 = np.percentile((model_err) ** 2, 95, axis=(2, 3, 4))
+    model_p_99 = np.percentile((model_err) ** 2, 99, axis=(2, 3, 4))
 
-    model_std = np.reshape(model_std, (np.prod(model_std.shape), 1)).tolist()
+    model_mse = np.reshape(model_mse, (np.prod(model_mse.shape), 1))
+    model_p_50 = np.reshape(model_p_50, (np.prod(model_mse.shape), 1))
+    model_p_75 = np.reshape(model_p_75, (np.prod(model_mse.shape), 1))
+    model_p_90 = np.reshape(model_p_90, (np.prod(model_mse.shape), 1))
+    model_p_95 = np.reshape(model_p_95, (np.prod(model_mse.shape), 1))
+    model_p_99 = np.reshape(model_p_99, (np.prod(model_mse.shape), 1))
+    model_std = np.reshape(model_std, (np.prod(model_mse.shape), 1))
 
-    is_anom = clf_models["clf" + camera_id].predict(model_std).tolist()
+    df = pd.DataFrame(
+        {
+            "model_mse": model_mse,
+            "model_p_50": model_p_50,
+            "model_p_75": model_p_75,
+            "model_p_90": model_p_90,
+            "model_p_95": model_p_95,
+            "model_p_99": model_p_99,
+            "model_std": model_std,
+        }
+    )
 
-    return (model_std, is_anom)
+    is_anom = clf_models["clf" + camera_id].predict(df).tolist()
+
+    return (is_anom)

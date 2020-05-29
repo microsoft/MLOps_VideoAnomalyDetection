@@ -29,6 +29,6 @@ json_data = bytes(json_data, encoding='utf8')
 headers = {'Content-Type':'application/json'}
 r = requests.post('http://localhost:8002/score', data=json_data, headers=headers)
 
-cm = confusion_matrix(y_test_s.tolist(), r.json()[1])
-acc = accuracy_score(y_test_s.tolist(), r.json()[1])
+cm = confusion_matrix(y_test_s.tolist(), r.json()[0])
+acc = accuracy_score(y_test_s.tolist(), r.json()[0])
 print("accuracy (chance: 0.5):", acc)

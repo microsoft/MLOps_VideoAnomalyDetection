@@ -28,8 +28,8 @@ except Exception as e:
     print(result)
     raise Exception('web service is not working as expected')
 
-cm = confusion_matrix(y_test.tolist(), prediction[1])
-acc = accuracy_score(y_test.tolist(), prediction[1])
+cm = confusion_matrix(y_test.tolist(), prediction[0])
+acc = accuracy_score(y_test.tolist(), prediction[0])
 
 print("Accuracy:", acc)
 print("Confusion Matrix:\n", cm)
