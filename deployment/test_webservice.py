@@ -26,18 +26,18 @@ ws = Workspace.from_config(auth=auth)
 service = AksWebservice(ws, "videoanom-service")
 
 # load the dataset 
-X_test_file = os.path.join('.', 'data', 'preprocessed', 'UCSDped1', 'X_test.hkl')
-y_test_file = os.path.join('.', 'data', 'preprocessed', 'UCSDped1', 'y_test.hkl')
-# X_test_file = os.path.join('.', 'deployment', 'test_data', 'X_test.hkl')
-# y_test_file = os.path.join('.', 'deployment', 'test_data', 'y_test.hkl')
+# X_test_file = os.path.join('.', 'data', 'preprocessed', 'UCSDped1', 'X_test.hkl')
+# y_test_file = os.path.join('.', 'data', 'preprocessed', 'UCSDped1', 'y_test.hkl')
+X_test_file = os.path.join('.', 'deployment', 'test_data', 'X_test.hkl')
+y_test_file = os.path.join('.', 'deployment', 'test_data', 'y_test.hkl')
 X_test = hkl.load(X_test_file)
 y_test = hkl.load(y_test_file)
 
-anoms = np.where(y_test == 1)[0]
-random_anom = np.random.choice(anoms)
-print(random_anom)
-X_test = X_test[(random_anom - 10):(random_anom + 10)]
-y_test = y_test[(random_anom - 10):(random_anom + 10)]
+# anoms = np.where(y_test == 1)[0]
+# random_anom = np.random.choice(anoms)
+# print(random_anom)
+# X_test = X_test[(random_anom - 10):(random_anom + 10)]
+# y_test = y_test[(random_anom - 10):(random_anom + 10)]
 
 json_data = json.dumps({"data": X_test.tolist(), "id": "UCSDped1"})
 json_data = bytes(json_data, encoding='utf8')
