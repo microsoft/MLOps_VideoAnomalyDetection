@@ -14,11 +14,13 @@ The approach can be used both in a supervised and unsupervised fashion, thus ena
 
 ## Example scenarios
 
-Here is a demonstration of this approach in an **unsupervised** fashion:
+The following snapshots are also links to video demonstrations.
+
+**Unsupervised Approach**:
 
 [![Video of unsupervised anomaly detection](./video_anom_usup.png)](https://www.youtube.com/watch?v=a966CT7PtHg)
 
-Here is a demonstration of this approach in a **supervised** fashion:
+**Supervised Approach**:
 
 [![Video of unsupervised anomaly detection](./video_anom.PNG)](https://coursematerial.blob.core.windows.net/assets/video_anomaly_detection.mp4)
 
