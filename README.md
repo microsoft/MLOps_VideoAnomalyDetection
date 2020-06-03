@@ -12,6 +12,12 @@ The approach can be used both in a supervised and unsupervised fashion, thus ena
 
 > Post on [LinkedIn](https://www.linkedin.com/feed/update/urn:li:activity:6512538611181846528) (includes **video**)
 
+Here is a demonstration of this approach in an unsupervised fashion:
+[![Video of unsupervised anomaly detection](./video_anom_usup.png)](https://www.youtube.com/watch?v=a966CT7PtHg)
+
+Here is a demonstration of this approach in a supervised fashion:
+[![Video of unsupervised anomaly detection](./video_anom.PNG)](https://coursematerial.blob.core.windows.net/assets/video_anomaly_detection.mp4)
+
 # Learning Goals
 
 You will learn:
