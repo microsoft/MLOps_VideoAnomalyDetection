@@ -165,8 +165,8 @@ data_generator = SequenceGenerator(
 )
 X_test, y_test = data_generator.create_all()
 
-# hkl.dump(X_test[4], "deployment/test_data/X_test.hkl", compression="gzip")
-# hkl.dump(y_test[4], "deployment/test_data/y_test.hkl", compression="gzip")
+hkl.dump(X_test[100], "deployment/test_data/X_test.hkl", compression="gzip")
+hkl.dump(y_test[100], "deployment/test_data/y_test.hkl", compression="gzip")
 
 # Apply model to the test sequences
 X_hat = test_model.predict(X_test, args.batch_size)
