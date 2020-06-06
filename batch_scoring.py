@@ -108,15 +108,19 @@ scored_data = os.path.join(args.scored_data, args.dataset, "Test")
 os.makedirs(scored_data, exist_ok=True)
 
 # load the dataset
-test_file = os.path.join(
+X_test_file = os.path.join(
     args.preprocessed_data,
     args.dataset,
     "X_test.hkl")
+y_test_file = os.path.join(
+    args.preprocessed_data,
+    args.dataset,
+    "y_test.hkl")
 test_sources = os.path.join(
     args.preprocessed_data,
     args.dataset,
     "sources_test.hkl")
-X = hkl.load(test_file)
+X = hkl.load(X_test_file)
 sources = hkl.load(test_sources)
 
 weights_file = os.path.join("model", "weights.hdf5")
@@ -150,13 +154,17 @@ test_model = Model_keras(inputs=inputs, outputs=predictions)
 
 # Define Generator for test sequences
 test_generator = TestsetGenerator(
-    test_file,
+    X_test_file,
     test_sources,
     args.nt,
+    y_data_file=y_test_file,
     data_format=data_format,
     N_seq=args.N_seq
 )
-X_test = test_generator.create_all()
+X_test, y_test = test_generator.create_all()
+
+# hkl.dump(X_test[4], "deployment/test_data/X_test.hkl")
+# hkl.dump(y_test[4], "deployment/test_data/y_test.hkl")
 
 # Apply model to the test sequences
 X_hat = test_model.predict(X_test, args.batch_size)

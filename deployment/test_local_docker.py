@@ -14,6 +14,7 @@ from sklearn.metrics import confusion_matrix, accuracy_score
 # load the dataset 
 X_test_file = os.path.join('.', 'data', 'preprocessed', 'UCSDped1', 'X_test.hkl')
 y_test_file = os.path.join('.', 'data', 'preprocessed', 'UCSDped1', 'y_test.hkl')
+
 X_test = hkl.load(X_test_file)
 y_test = hkl.load(y_test_file)
 

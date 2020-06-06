@@ -6,6 +6,8 @@ from azureml.core import Workspace
 from azureml.core.model import Model
 from azureml.core.image import ContainerImage, Image
 
+os.makedirs("aml_config", exist_ok=True)
+
 # initialize workspace from config.json
 ws = Workspace.from_config()
 

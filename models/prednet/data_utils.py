@@ -25,8 +25,8 @@ class SequenceGenerator(keras.utils.Sequence):
         assert sequence_start_mode in {'all', 'unique'}, \
             'sequence_start_mode must be in {all, unique}'
         self.sequence_start_mode = sequence_start_mode
-        assert output_mode in {'error', 'prediction'}, \
-            'output_mode must be in {error, prediction}'
+        assert output_mode in {'error', 'prediction', 'classification'}, \
+            'output_mode must be in {error, prediction, classification}'
         self.output_mode = output_mode
 
         if self.data_format == 'channels_first':
@@ -111,20 +111,24 @@ class SequenceGenerator(keras.utils.Sequence):
 
 class TestsetGenerator(keras.utils.Sequence):
     'Generates data for Keras'
-    def __init__(self, data_file, source_file, nt,
+    def __init__(self, data_file, source_file, nt, y_data_file=None,
                  batch_size=8, shuffle=False, seed=None,
                  output_mode='error', sequence_start_mode='all', N_seq=None,
                  data_format=K.image_data_format()):
         # X will be like (n_images, nb_cols, nb_rows, nb_channels)
         self.X = hkl.load(data_file)
+        if y_data_file:
+            self.y = hkl.load(y_data_file)
+        else:
+            self.y = None
         # source for each image so when creating sequences can assure
         # that consecutive frames are from same video
         self.sources = hkl.load(source_file)
         self.nt = nt
         self.batch_size = batch_size
         self.data_format = data_format
-        assert output_mode in {'error', 'prediction'}, \
-            'output_mode must be in {error, prediction}'
+        assert output_mode in {'error', 'prediction', 'classification'}, \
+            'output_mode must be in {error, prediction, classification}'
         self.output_mode = output_mode
 
         if self.data_format == 'channels_first':
@@ -165,6 +169,8 @@ class TestsetGenerator(keras.utils.Sequence):
         elif self.output_mode == 'prediction':
             # output actual pixels
             batch_y = batch_x
+        elif self.output_mode == 'classification':
+            batch_y = self[idx:idx+self.nt]
 
         return batch_x, batch_y
 
@@ -183,7 +189,10 @@ class TestsetGenerator(keras.utils.Sequence):
     def create_all(self):
         X_all = np.zeros(
             (self.N_sequences, self.nt) + self.im_shape, np.float32)
+        y_all = np.zeros(
+            (self.N_sequences, self.nt), np.float32
+        )
         for i, idx in enumerate(self.possible_starts):
             X_all[i] = self.preprocess(self.X[idx:idx+self.nt])
-
-        return X_all
+            y_all[i] = self.y[idx:idx+self.nt]
+        return X_all, y_all
