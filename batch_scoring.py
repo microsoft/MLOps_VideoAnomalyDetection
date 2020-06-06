@@ -15,7 +15,7 @@ from keras.layers import Input
 import tensorflow as tf
 
 from models.prednet.prednet import PredNet
-from models.prednet.data_utils import TestsetGenerator
+from models.prednet.data_utils import TestsetGenerator, SequenceGenerator
 import argparse
 
 from azureml.core.model import Model
@@ -56,7 +56,7 @@ parser.add_argument(
     help="dataset we are using",
 )
 parser.add_argument(
-    "--nt", default=200, type=int, dest="nt", help="length of video sequences"
+    "--nt", default=10, type=int, dest="nt", help="length of video sequences"
 )
 parser.add_argument(
     "--n_plot",
@@ -108,15 +108,19 @@ scored_data = os.path.join(args.scored_data, args.dataset, "Test")
 os.makedirs(scored_data, exist_ok=True)
 
 # load the dataset
-test_file = os.path.join(
+X_test_file = os.path.join(
     args.preprocessed_data,
     args.dataset,
     "X_test.hkl")
+y_test_file = os.path.join(
+    args.preprocessed_data,
+    args.dataset,
+    "y_test.hkl")
 test_sources = os.path.join(
     args.preprocessed_data,
     args.dataset,
     "sources_test.hkl")
-X = hkl.load(test_file)
+X = hkl.load(X_test_file)
 sources = hkl.load(test_sources)
 
 weights_file = os.path.join("model", "weights.hdf5")
@@ -149,14 +153,20 @@ predictions = prednet(inputs)
 test_model = Model_keras(inputs=inputs, outputs=predictions)
 
 # Define Generator for test sequences
-test_generator = TestsetGenerator(
-    test_file,
+# test_generator = TestsetGenerator(
+data_generator = SequenceGenerator(
+    X_test_file,
     test_sources,
     args.nt,
+    y_data_file=y_test_file,
     data_format=data_format,
-    N_seq=args.N_seq
+    N_seq=args.N_seq,
+    sequence_start_mode="unique"
 )
-X_test = test_generator.create_all()
+X_test, y_test = data_generator.create_all()
+
+hkl.dump(X_test[100], "deployment/test_data/X_test.hkl", compression="gzip")
+hkl.dump(y_test[100], "deployment/test_data/y_test.hkl", compression="gzip")
 
 # Apply model to the test sequences
 X_hat = test_model.predict(X_test, args.batch_size)
@@ -187,6 +197,8 @@ model_p_95 = np.reshape(model_p_95, np.prod(model_mse.shape))
 model_p_99 = np.reshape(model_p_99, np.prod(model_mse.shape))
 model_std = np.reshape(model_std, np.prod(model_mse.shape))
 
+y_col = np.reshape(y_test, np.prod(y_test.shape))
+
 # save the results to a dataframe
 df = pd.DataFrame(
     {
@@ -197,6 +209,7 @@ df = pd.DataFrame(
         "model_p_95": model_p_95,
         "model_p_99": model_p_99,
         "model_std": model_std,
+        "y": y_col,
     }
 )
 df.to_pickle(os.path.join(args.scored_data, "df.pkl.gz"))

@@ -60,8 +60,10 @@ df = pd.read_pickle(os.path.join(args.scored_data, "df.pkl.gz"))
 # X = df.loc[
 #     :, ["model_std"]
 # ]
-X = df
-y = hkl.load(os.path.join(args.preprocessed_data, args.dataset, "y_test.hkl"))
+# X = df
+# y = hkl.load(os.path.join(args.preprocessed_data, args.dataset, "y_test.hkl"))
+X = df.iloc[:,:-1].values
+y = df.iloc[:,-1].values
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=123)
 
