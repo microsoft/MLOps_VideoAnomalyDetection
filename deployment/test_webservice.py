@@ -33,6 +33,8 @@ y_test_file = os.path.join('.', 'deployment', 'test_data', 'y_test.hkl')
 X_test = hkl.load(X_test_file)
 y_test = hkl.load(y_test_file)
 
+X_test = X_test[:10]
+y_test = y_test[:10]
 # anoms = np.where(y_test == 1)[0]
 # random_anom = np.random.choice(anoms)
 # print(random_anom)
