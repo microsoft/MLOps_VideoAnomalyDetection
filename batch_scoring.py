@@ -163,8 +163,8 @@ test_generator = TestsetGenerator(
 )
 X_test, y_test = test_generator.create_all()
 
-# hkl.dump(X_test[4], "deployment/test_data/X_test.hkl")
-# hkl.dump(y_test[4], "deployment/test_data/y_test.hkl")
+# hkl.dump(X_test[4], "deployment/test_data/X_test.hkl", compression="gzip")
+# hkl.dump(y_test[4], "deployment/test_data/y_test.hkl", compression="gzip")
 
 # Apply model to the test sequences
 X_hat = test_model.predict(X_test, args.batch_size)
