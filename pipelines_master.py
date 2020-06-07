@@ -118,7 +118,7 @@ cd = CondaDependencies.create()
 
 # conda dependencies for compute targets
 conda_dependencies = CondaDependencies.create(
-    conda_packages=["cudatoolkit=10.1"],
+    conda_packages=["cudatoolkit=10.0"],
     pip_packages=[
         "azure-storage-blob==2.1.0",
         "azureml-sdk",
