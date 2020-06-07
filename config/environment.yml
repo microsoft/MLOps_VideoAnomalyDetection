@@ -9,11 +9,10 @@ channels:
 
 dependencies:
   - python=3.6
-  - cudatoolkit=10.1
+  - cudatoolkit=10.0
   - pip
 
   - pip:
-    # - tensorflow
     - tensorflow-gpu==1.15
     - keras
     - hickle
@@ -23,7 +22,6 @@ dependencies:
     - sklearn
     - pandas
     - azureml-sdk
-    # - azureml-defaults==1.1.5
     - numpy
     - pylint # optional
     - pillow

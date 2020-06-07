@@ -47,7 +47,10 @@ You will learn:
 
 ## Software Dependencies
 
-- Various python modules. We recommend working with a conda environement (see `config/environment.yml` and [Documentation](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html)).  We recommend you begin by installing [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
+- Various python modules. We recommend working with a conda environement (see `config/environment.yml` and [Documentation](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html)).
+  - We recommend you begin by installing [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
+  - Also consider running the following command to update you conda base image: `conda update -n base -c defaults conda`
+  - Then, you could run: `conda env create -f config/environment.yml`
 - If you are using a [DSVM](https://azure.microsoft.com/en-us/services/virtual-machines/data-science-virtual-machines/):
 	- We recommend VS code [https://code.visualstudio.com/](https://code.visualstudio.com/) with [ssh - remote](https://code.visualstudio.com/docs/remote/ssh) extension.
 	- We recommend X2Go [https://wiki.x2go.org/doku.php](https://wiki.x2go.org/doku.php)
@@ -102,3 +105,15 @@ We invite contributions to this repository. The preferred method would be to for
 - Original Prednet implementation is on [github.com](https://coxlab.github.io/prednet/).
 
 - Interesting blog post on [Self-Supervised Video Anomaly Detection](https://launchpad.ai/blog/video-anomaly-detection) by [Steve Shimozaki](https://launchpad.ai/blog?author=590f381c3e00bed4273e304b) 
+
+## Troubleshooting
+
+### Missing cuda libraries
+
+We noticed that tensorflow might be looking for the wrong the of cudatoolkit.
+
+You might see the following error:
+
+`Could not load dynamic library 'libcudart.so.10.0'; dlerror: libcudart.so.10.0: cannot open shared object file: No such file or directory`
+
+We found that it helps to look at which version of these libraries you have installed, and pin the version of cudatoolkit to the version that tensorflow is looking for. E.g. above, TF is looking for 10.0, so we pinned the version of the cudatoolkit to 10.0 in `config/environment.yml`.
