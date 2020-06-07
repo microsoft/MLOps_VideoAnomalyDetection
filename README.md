@@ -73,11 +73,10 @@ The recommended first step is to clone this repository.
 
 ### Getting Started
 
-1. [Data Preparation](./docs/data_prep_w_pillow.md) - Download and prepare data for training/testing.
+1. [Data Preparation](./docs/data_preparation.md) - Download and prepare data for training/testing.
 1. [Azure ML Configuration](./docs/aml_configuration.md) - Configure your Azure ML workspace.
 1. [AML Pipelines](./docs/aml_pipelines.md) - Automate data preparation, training, and re-training.
-1. [Deployment](./docs/deployment.md)
-1. [MLOps](./docs/mlops.md) - How to quickly scale your solution with the MLOps extension for DevOps.
+1. [Deployment](./docs/deployment.md) - How to deploy your anomaly detection as a webservice on AKS.
 
 ### Deep-dive
 

@@ -1,6 +1,6 @@
 # Anomaly Detection
 
-We have prepared our data (`data_prep.py`) and trained our model (`train.py`).  Next, we see whether we can used it for detecting anomalies in video sequences.  
+We have prepared our data (`data_preparation.py`) and trained our model (`train.py`).  Next, we see whether we can used it for detecting anomalies in video sequences.  
 
 This is done in two steps:
 1. Apply the trained model to the test dataset, i.e. to videos that contain anomalies.
@@ -12,16 +12,12 @@ The UCSD dataset is a bit unusual in the sense that it actually contains informa
 
 ## Apply the trained model to the test dataset
 
-Here, we use the script `test.py`. The script begins by loading the data.
+Here, we use the script `batch_scoring.py`. The script begins by loading the data.
 
 
 ### Configuration
 
 There are some minimal settings we have to perform here. Most things don't change from how we configured the model and data for training, so we don't have to go over those again.
-
-However, one critical change is that we trained the model on video sequences of 10 frames.  The test data is setup contains video sequences of with 200 frames.  We are going to show these in their entirety to the model, so we set the setting `nt` to 200.
-
-> If you are anticipating that your model will have to work with videos of variable lengths, you could bad shorter sequences with empty frames in the end.
 
 Another thing to we need to do is to configure what kind of output we want to model to produce.  Here, we are setting it to output its prediction for the next frame. That is, the activation in the A_hat layer:
 
@@ -46,11 +42,9 @@ The last step is to save these metrics to a pickled pandas dataframe.
 
 ## Annotate results with labels from test dataset
 
-> `annotate_results.py`
+Next, we load the labels (`y_test`) for the test dataset to annotate our results.
 
-Next, we load the labels for the test dataset to annotate our results.
-
-Our results dataframe (from running `test.py`) contains one row per dataframe and various metrics for the frame, giving us information about how well the model predicted each video frame (e.g. mean squared error).  We want to add a column that tells us for each frame whether this frame contains an anomaly.
+Our results dataframe (from running `batch_scoring.py`) contains one row per dataframe and various metrics for the frame, giving us information about how well the model predicted each video frame (e.g. mean squared error).  We want to add a column that tells us for each frame whether this frame contains an anomaly.
 
 ## Explore relationship between model metrics and anomalies
 
