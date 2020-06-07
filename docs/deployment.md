@@ -25,18 +25,10 @@ Apart from importing the modules needed for processing data and creating the net
 1. init - which is executed only once, when the webservice is started.
 2. run - which is executed everytime data is sent to the webservice for processing.
 
-
-## Create a docker image
-
-Filename: `deployment/created_docker_image.py`
-
-We use the above scoring script, define dependencies for a conda environmnet in which to execute the scoring script, and also include all custom scripts needed by the scoring script.
-
-
 ## Deploy the docker image as a webservice
 
-Filename: `deploy_aci.py`
+Filename: `deployment/deploy.py`
 
 ## Test the webservice
 
-Use the script `test_aci.py` to see whether your webservice behaves as expected.
+Use the script `deployment/test_webservice.py` to see whether your webservice behaves as expected.
