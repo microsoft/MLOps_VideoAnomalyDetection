@@ -106,6 +106,19 @@ def upload_data(folder='UCSDped1'):
         target_path=target_path,
     )
 
+    with open("placeholder.txt", "w") as f:
+        f.write(
+            "This is just a placeholder to ensure that this path exists in the blobstore.\n"
+            "The scheduler of the master pipeline checks whether the time stamp of this file has changed.\n"
+            "This was last updated when this folder was uploaded: %s\n" % folder
+        )
+
+    ds.upload_files(
+        [os.path.join(os.getcwd(), "placeholder.txt")],
+        target_path="prednet/data/raw_data/",
+        overwrite=True
+    )
+
 
 def delete_data_from_blob(prefix):
     from azure.storage.blob.blockblobservice import BlockBlobService
