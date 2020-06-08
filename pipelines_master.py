@@ -185,7 +185,7 @@ with open("placeholder.txt", "w") as f:
 
 datastore.upload_files(
     [os.path.join(os.getcwd(), "placeholder.txt")],
-    target_path="prednet/data/proprocessed/",
+    target_path="prednet/data/preprocessed/",
 )
 
 schedule = Schedule.create(
