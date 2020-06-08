@@ -185,7 +185,7 @@ with open("placeholder.txt", "w") as f:
 
 datastore.upload_files(
     [os.path.join(os.getcwd(), "placeholder.txt")],
-    target_path="prednet/data/proprocessed/",
+    target_path="prednet/data/raw_data/",
 )
 
 schedule = Schedule.create(
@@ -196,8 +196,8 @@ schedule = Schedule.create(
     datastore=datastore,
     wait_for_provisioning=True,
     description="Datastore scheduler for Pipeline" + pipeline_name,
-    path_on_datastore="prednet/data/preprocessed",
-    polling_interval=60,
+    path_on_datastore="prednet/data/raw_data",
+    polling_interval=5,
 )
 
 print("Created schedule with id: {}".format(schedule.id))
