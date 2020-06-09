@@ -10,6 +10,8 @@ from azureml.core.runconfig import (
     CondaDependencies,
     RunConfiguration
 )
+from azureml.core.runconfig import DEFAULT_GPU_IMAGE
+
 from azureml.pipeline.core import Pipeline
 from azureml.pipeline.steps import PythonScriptStep
 from azureml.pipeline.core.schedule import Schedule
@@ -138,6 +140,7 @@ conda_dependencies = CondaDependencies.create(
 env = Environment("prednet")
 env.python.conda_dependencies = conda_dependencies
 env.docker.enabled = True
+env.docker.base_image = DEFAULT_GPU_IMAGE
 env.register(ws)
 
 # Runconfigs

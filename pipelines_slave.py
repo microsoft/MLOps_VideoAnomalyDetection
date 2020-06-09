@@ -35,7 +35,7 @@ def build_prednet_pipeline(dataset, ws):
 
     # folder for scripts that need to be uploaded to Aml compute target
     script_folder = "./scripts"
-    os.makedirs(script_folder)
+    os.makedirs(script_folder, exist_ok=True)
 
     shutil.copytree(
         os.path.join(base_dir, "models"),
