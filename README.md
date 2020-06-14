@@ -47,7 +47,7 @@ You will learn:
 
 ## Software Dependencies
 
-- Various python modules. We recommend working with a conda environement (see `config/environment.yml` and [Documentation](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html)).
+- Various python modules. We recommend working with a conda environment (see `config/environment.yml` and [Documentation](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html)).
   - We recommend you begin by installing [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
   - Also consider running the following command to update you conda base image: `conda update -n base -c defaults conda`
   - Then, you could run: `conda env create -f config/environment.yml`
