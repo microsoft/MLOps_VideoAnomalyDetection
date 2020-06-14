@@ -29,6 +29,8 @@ Apart from importing the modules needed for processing data and creating the net
 
 Filename: `deployment/deploy.py`
 
+>NOTE: this needs to be run from the root of the repository, i.e. `python3 ./deployment/deploy.py`.
+
 ## Test the webservice
 
 Use the script `deployment/test_webservice.py` to see whether your webservice behaves as expected.
