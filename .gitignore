@@ -104,3 +104,12 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Data (in case downloaded locally)
+*.tar.gz
+
+# OS specific
+*.DS_Store
+
+# Secrets
+*config.json

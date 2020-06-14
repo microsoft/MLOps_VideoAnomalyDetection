@@ -1,6 +1,6 @@
 # Data Preparation
 
-You can execute the following script to prepare data locally:
+After [downloading the data locally](#download-the-data), you can execute the following script to prepare the data:
 
 > file: `data_preparation.py`
 > runtime: ~1 minute
