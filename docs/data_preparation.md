@@ -5,7 +5,7 @@ You can execute the following script to prepare data locally:
 > file: `data_preparation.py`
 > runtime: ~1 minute
 
-Note: As mentioned in the [README](../README.md) file, consider using a Conda Environmnet.  This can be done with the simple command: `conda env create -f config/environment.yml`
+Note: As mentioned in the [README](../README.md) file, consider using a [Conda environment](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html).  This can be done with the simple command: `conda env create -f config/environment.yml`
 
 ## Download the data
 
@@ -15,7 +15,7 @@ For example, you could run the following in Bash:
 ```
 cd /tmp
 wget http://www.svcl.ucsd.edu/projects/anomaly/UCSD_Anomaly_Dataset.tar.gz
-cd /home/wopauli/MLOps_VideoAnomalyDetection/data
+cd /home/<your-username>/MLOps_VideoAnomalyDetection/data
 tar xzvf /tmp/UCSD_Anomaly_Dataset.tar.gz
 ```
 
